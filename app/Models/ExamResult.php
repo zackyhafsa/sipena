@@ -10,6 +10,7 @@ class ExamResult extends Model
     protected $fillable = [
         'user_id', 'exam_id', 'score', 'answers_log',
         'cheat_warning_count', 'started_at', 'finished_at',
+        'is_scored_manually', 'teacher_notes'
     ];
 
     // Cast agar answers_log bisa kita akses sebagai array di PHP
@@ -17,6 +18,7 @@ class ExamResult extends Model
         'answers_log' => 'array',
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
+        'is_scored_manually' => 'boolean',
     ];
 
     public function exam(): BelongsTo

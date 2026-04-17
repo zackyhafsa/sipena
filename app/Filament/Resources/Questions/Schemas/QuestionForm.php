@@ -29,7 +29,16 @@ class QuestionForm
                             ->numeric()
                             ->default(1)
                             ->required(),
-                    ])->columns(2),
+                        Select::make('type')
+                            ->label('Jenis Soal')
+                            ->options([
+                                'multiple_choice' => 'Pilihan Ganda',
+                                'essay' => 'Esai'
+                            ])
+                            ->default('multiple_choice')
+                            ->reactive()
+                            ->required(),
+                    ])->columns(3),
 
                 Section::make('Detail Pertanyaan & Jawaban')
                     ->schema([
@@ -41,15 +50,20 @@ class QuestionForm
 
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('option_a')->label('Opsi A')->required(),
-                                TextInput::make('option_b')->label('Opsi B')->required(),
-                                TextInput::make('option_c')->label('Opsi C')->required(),
-                                TextInput::make('option_d')->label('Opsi D')->required(),
+                                TextInput::make('option_a')->label('Opsi A')
+                                    ->required(fn ($get) => $get('type') === 'multiple_choice'),
+                                TextInput::make('option_b')->label('Opsi B')
+                                    ->required(fn ($get) => $get('type') === 'multiple_choice'),
+                                TextInput::make('option_c')->label('Opsi C')
+                                    ->required(fn ($get) => $get('type') === 'multiple_choice'),
+                                TextInput::make('option_d')->label('Opsi D')
+                                    ->required(fn ($get) => $get('type') === 'multiple_choice'),
                                 TextInput::make('option_e')->label('Opsi E (Opsional)'),
-                            ]),
+                            ])
+                            ->visible(fn ($get) => $get('type') === 'multiple_choice'),
 
                         Radio::make('correct_answer')
-                            ->label('Kunci Jawaban Benar')
+                            ->label('Kunci Jawaban Benar (Ganda)')
                             ->options([
                                 'A' => 'A',
                                 'B' => 'B',
@@ -58,8 +72,17 @@ class QuestionForm
                                 'E' => 'E',
                             ])
                             ->inline()
-                            ->required()
+                            ->required(fn ($get) => $get('type') === 'multiple_choice')
+                            ->visible(fn ($get) => $get('type') === 'multiple_choice')
                             ->columnSpanFull(),
+                            
+                        Textarea::make('correct_answer_essay')
+                            ->label('Acuan Jawaban Benar (Esai)')
+                            ->helperText('Diperuntukkan untuk referensi guru dalam memberikan nilai ujian esai siswa')
+                            ->required(fn ($get) => $get('type') === 'essay')
+                            ->visible(fn ($get) => $get('type') === 'essay')
+                            ->columnSpanFull()
+                            ->rows(4),
                     ]),
             ]);
     }

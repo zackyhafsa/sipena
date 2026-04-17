@@ -4,96 +4,116 @@ namespace App\Livewire;
 
 use App\Models\Exam;
 use App\Models\ExamResult;
-use Carbon\Carbon;
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.app')]
 class StudentExam extends Component
 {
+    public $exam_id;
     public $exam;
-
     public $questions;
-
-    public $currentQuestionIndex = 0;
-
-    // Menyimpan jawaban siswa: ['question_id' => 'A']
     public $answers = [];
-
-    public $cheatWarnings = 0;
-
-    public $isFinished = false;
-
-    public $score = 0;
+    public $violationCount = 0;
+    public $maxViolations = 3;
+    public $started_at;
 
     public function mount($exam_id)
     {
-        // Ambil data ujian yang sedang aktif beserta soalnya
-        $this->exam = Exam::with('questions')->where('id', $exam_id)->where('is_active', true)->firstOrFail();
+        $this->exam_id = $exam_id;
+        $this->exam = Exam::with('questions')->findOrFail($exam_id);
+        
+        // Prevent retaking completed exams
+        $result = ExamResult::where('user_id', auth()->id())
+            ->where('exam_id', $this->exam_id)
+            ->first();
+            
+        if ($result) {
+            session()->flash('error', 'Anda sudah menyelesaikan ujian ini.');
+            $this->redirect(route('student.dashboard'));
+            return;
+        }
+
         $this->questions = $this->exam->questions;
 
-        // Inisialisasi array jawaban kosong
         foreach ($this->questions as $question) {
             $this->answers[$question->id] = null;
         }
+        
+        $this->started_at = now()->toDateTimeString();
     }
 
-    public function nextQuestion()
+    public function registerViolation()
     {
-        if ($this->currentQuestionIndex < count($this->questions) - 1) {
-            $this->currentQuestionIndex++;
+        $this->violationCount++;
+        
+        if ($this->violationCount >= $this->maxViolations) {
+            $this->forceSubmit();
+        } else {
+            $this->dispatch('show-violation-warning', count: $this->violationCount, max: $this->maxViolations);
         }
     }
 
-    public function previousQuestion()
+    public function forceSubmit()
     {
-        if ($this->currentQuestionIndex > 0) {
-            $this->currentQuestionIndex--;
+        $existingResult = ExamResult::where('user_id', auth()->id())
+            ->where('exam_id', $this->exam_id)
+            ->first();
+
+        if (!$existingResult) {
+            $this->saveResult();
         }
+
+        session()->flash('error', 'Ujian Anda dihentikan otomatis karena terdeteksi meninggalkan halaman pengerjaan lebih dari batas yang diizinkan.');
+        return redirect()->to(route('student.dashboard'));
     }
 
-    public function addCheatWarning()
+    public function submit()
     {
-        $this->cheatWarnings++;
+        $existingResult = ExamResult::where('user_id', auth()->id())
+            ->where('exam_id', $this->exam_id)
+            ->first();
 
-        // Jika pelanggaran sudah 3 kali, otomatis kumpulkan ujian
-        if ($this->cheatWarnings >= 3) {
-            $this->submitExam();
+        if (!$existingResult) {
+            $this->saveResult();
         }
+
+        session()->flash('success', 'Ujian berhasil diselesaikan! Hasil anda telah disimpan.');
+        return redirect()->to(route('student.dashboard'));
     }
-
-    public function submitExam()
+    
+    private function saveResult()
     {
-        $totalScore = 0;
-        $maxScore = 0;
-
-        // Hitung nilai
-        foreach ($this->questions as $question) {
-            $maxScore += $question->score_weight;
-
-            if (isset($this->answers[$question->id]) && $this->answers[$question->id] === $question->correct_answer) {
-                $totalScore += $question->score_weight;
+        $totalWeight = 0;
+        $earnedScore = 0;
+        
+        foreach($this->questions as $question) {
+            $weight = $question->score_weight ?? 1;
+            $totalWeight += $weight;
+            
+            // Periksa jawaban benar sesuai kunci (opsi huruf dan database)
+            $userAnswer = $this->answers[$question->id] ?? null;
+            if ($userAnswer === $question->correct_answer) {
+                $earnedScore += $weight;
             }
         }
+        
+        $finalScore = $totalWeight > 0 ? round(($earnedScore / $totalWeight) * 100, 2) : 0;
 
-        // Kalkulasi nilai ke skala 100
-        $this->score = $maxScore > 0 ? round(($totalScore / $maxScore) * 100) : 0;
-
-        // Simpan ke database
         ExamResult::create([
-            'user_id' => 1, // DUMMY USER ID (Nanti bisa diganti)
-            'exam_id' => $this->exam->id,
-            'score' => $this->score,
+            'user_id' => auth()->id(),
+            'exam_id' => $this->exam_id,
             'answers_log' => $this->answers,
-            'cheat_warning_count' => $this->cheatWarnings,
-            'started_at' => Carbon::now()->subMinutes($this->exam->duration),
-            'finished_at' => Carbon::now(),
+            'score' => $finalScore,
+            'cheat_warning_count' => $this->violationCount,
+            'started_at' => $this->started_at,
+            'finished_at' => now(),
+            'is_scored_manually' => false,
         ]);
-
-        $this->isFinished = true;
     }
 
     public function render()
     {
-        // Pastikan kita menggunakan layout bawaan Livewire/Laravel
-        return view('livewire.student-exam')->layout('layouts.app');
+        return view('livewire.student-exam');
     }
 }

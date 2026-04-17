@@ -9,27 +9,37 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ExamResultResource extends Resource
 {
     protected static ?string $model = ExamResult::class;
 
-    // Pakai icon chart untuk hasil ujian
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
-
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationLabel = 'Hasil Ujian';
 
     protected static ?string $modelLabel = 'Hasil Ujian';
 
     protected static ?string $pluralModelLabel = 'Daftar Hasil Ujian';
 
-    // Menonaktifkan tombol "New/Tambah" karena hasil ujian masuk otomatis dari siswa
     public static function canCreate(): bool
     {
         return false;
     }
+    
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
 
-    // Kita tidak butuh form() di sini karena datanya read-only
+        if (auth()->check() && auth()->user()->role === 'admin') {
+            // Guru admin hanya melihat hasil ujian siswa dari kelasnya
+            $query->whereHas('user', function (Builder $q) {
+                $q->where('classroom_id', auth()->user()->classroom_id);
+            });
+        }
+
+        return $query;
+    }
 
     public static function table(Table $table): Table
     {
@@ -44,7 +54,6 @@ class ExamResultResource extends Resource
     public static function getPages(): array
     {
         return [
-            // Hanya ada halaman list
             'index' => ListExamResults::route('/'),
         ];
     }
