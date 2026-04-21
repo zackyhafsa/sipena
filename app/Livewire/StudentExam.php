@@ -17,13 +17,19 @@ class StudentExam extends Component
     public $violationCount = 0;
     public $maxViolations = 3;
     public $started_at;
+    
+    // Pagination properties
+    public $currentQuestionIndex = 0;
+    
+    // Token properties
+    public $isTokenVerified = false;
+    public $inputToken = '';
 
     public function mount($exam_id)
     {
         $this->exam_id = $exam_id;
         $this->exam = Exam::with('questions')->findOrFail($exam_id);
         
-        // Prevent retaking completed exams
         $result = ExamResult::where('user_id', auth()->id())
             ->where('exam_id', $this->exam_id)
             ->first();
@@ -40,7 +46,43 @@ class StudentExam extends Component
             $this->answers[$question->id] = null;
         }
         
-        $this->started_at = now()->toDateTimeString();
+        // Memeriksa jika ujian tidak memiliki token, langsung verifikasi
+        if (empty($this->exam->token)) {
+            $this->isTokenVerified = true;
+            $this->started_at = now()->toDateTimeString();
+        }
+    }
+
+    public function verifyToken()
+    {
+        if ($this->inputToken === $this->exam->token) {
+            $this->isTokenVerified = true;
+            $this->started_at = now()->toDateTimeString();
+            $this->addError('inputToken', ''); // clear errors if any
+        } else {
+            $this->addError('inputToken', 'Token yang Anda masukkan salah!');
+        }
+    }
+
+    public function goToQuestion($index)
+    {
+        if (isset($this->questions[$index])) {
+            $this->currentQuestionIndex = $index;
+        }
+    }
+
+    public function nextQuestion()
+    {
+        if ($this->currentQuestionIndex < count($this->questions) - 1) {
+            $this->currentQuestionIndex++;
+        }
+    }
+
+    public function previousQuestion()
+    {
+        if ($this->currentQuestionIndex > 0) {
+            $this->currentQuestionIndex--;
+        }
     }
 
     public function registerViolation()
@@ -48,7 +90,7 @@ class StudentExam extends Component
         $this->violationCount++;
         
         if ($this->violationCount >= $this->maxViolations) {
-            $this->forceSubmit();
+            $this->dispatch('show-fatal-warning');
         } else {
             $this->dispatch('show-violation-warning', count: $this->violationCount, max: $this->maxViolations);
         }
@@ -60,16 +102,19 @@ class StudentExam extends Component
             ->where('exam_id', $this->exam_id)
             ->first();
 
-        if (!$existingResult) {
+        if (!$existingResult && $this->isTokenVerified) {
             $this->saveResult();
         }
 
-        session()->flash('error', 'Ujian Anda dihentikan otomatis karena terdeteksi meninggalkan halaman pengerjaan lebih dari batas yang diizinkan.');
+        session()->flash('error', 'Ujian Anda dihentikan otomatis karena terdeteksi meninggalkan halaman pengerjaan lebih dari batas yang diizinkan (curang).');
         return redirect()->to(route('student.dashboard'));
     }
 
     public function submit()
     {
+        // Require double check when submitting to ensure token was verified
+        if (!$this->isTokenVerified) return;
+
         $existingResult = ExamResult::where('user_id', auth()->id())
             ->where('exam_id', $this->exam_id)
             ->first();
@@ -91,7 +136,6 @@ class StudentExam extends Component
             $weight = $question->score_weight ?? 1;
             $totalWeight += $weight;
             
-            // Periksa jawaban benar sesuai kunci (opsi huruf dan database)
             $userAnswer = $this->answers[$question->id] ?? null;
             if ($userAnswer === $question->correct_answer) {
                 $earnedScore += $weight;
@@ -99,7 +143,6 @@ class StudentExam extends Component
         }
         
         $finalScore = $totalWeight > 0 ? round(($earnedScore / $totalWeight) * 100, 2) : 0;
-
         ExamResult::create([
             'user_id' => auth()->id(),
             'exam_id' => $this->exam_id,
