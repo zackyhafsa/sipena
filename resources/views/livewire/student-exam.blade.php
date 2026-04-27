@@ -49,7 +49,7 @@
 
 
     <!-- Pengaturan Header / Top Bar -->
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sticky top-4 z-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 lg:sticky lg:top-4 z-10">
         <div
             class="bg-white/90 backdrop-blur-lg p-5 lg:p-6 rounded-2xl shadow-sm border border-gray-200/60 lg:flex lg:justify-between lg:items-center gap-4">
             <div>
@@ -167,43 +167,51 @@
                 @endforeach
 
                 <!-- Navigasi Bawah antar soal -->
-                <div
-                    class="mt-6 flex flex-col sm:flex-row items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-200 gap-4 sm:gap-0">
-                    <button type="button" :disabled="currentTab === 0"
-                        @click="if(currentTab > 0) { currentTab--; window.scrollTo({top: 0, behavior: 'smooth'}) }"
-                        :class="currentTab === 0 ? 'opacity-50 cursor-not-allowed bg-gray-50 text-gray-400' :
-                            'bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400 shadow-sm'"
-                        class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border font-bold rounded-xl transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
-                            </path>
-                        </svg>
-                        Soal Sebelumnya
-                    </button>
-
-                    <div class="text-sm font-medium text-gray-500"
+                <div class="mt-6 flex flex-col sm:flex-row items-center justify-between bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 gap-4 sm:gap-0">
+                    
+                    <!-- Indikator Soal (Pindah ke atas pada mobile) -->
+                    <div class="text-sm font-medium text-gray-500 sm:order-2"
                         x-text="`Soal ${currentTab + 1} dari {{ count($questions) }}`"></div>
 
-                    <button type="button" x-show="currentTab < {{ count($questions) - 1 }}"
-                        @click="currentTab++; window.scrollTo({top: 0, behavior: 'smooth'})"
-                        class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm hover:shadow transition-all">
-                        Soal Selanjutnya
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
-                            </path>
-                        </svg>
-                    </button>
+                    <!-- Wrapper Tombol (Kiri Kanan di Mobile) -->
+                    <div class="w-full sm:w-auto grid grid-cols-2 sm:flex gap-3 sm:order-1 sm:order-3">
+                        <button type="button" :disabled="currentTab === 0"
+                            @click="if(currentTab > 0) { currentTab--; window.scrollTo({top: 0, behavior: 'smooth'}) }"
+                            :class="currentTab === 0 ? 'opacity-50 cursor-not-allowed bg-gray-50 text-gray-400' :
+                                'bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400 shadow-sm'"
+                            class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-3.5 border font-bold rounded-xl transition-all text-sm sm:text-base">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                                </path>
+                            </svg>
+                            <span class="hidden sm:inline">Soal Sebelumnya</span>
+                            <span class="sm:hidden">Sebelumnya</span>
+                        </button>
 
-                    <!-- Tombol selesaikan ujian di navigasi bawah untuk soal terakhir -->
-                    <button type="button" x-show="currentTab === {{ count($questions) - 1 }}"
-                        @click="$dispatch('open-confirm-modal')"
-                        class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all">
-                        Selesaikan Ujian
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
-                            </path>
-                        </svg>
-                    </button>
+                        <div>
+                            <button type="button" x-show="currentTab < {{ count($questions) - 1 }}"
+                                @click="currentTab++; window.scrollTo({top: 0, behavior: 'smooth'})"
+                                class="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm hover:shadow transition-all text-sm sm:text-base">
+                                <span class="hidden sm:inline">Soal Selanjutnya</span>
+                                <span class="sm:hidden">Selanjutnya</span>
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                    </path>
+                                </svg>
+                            </button>
+
+                            <!-- Tombol selesaikan ujian di navigasi bawah untuk soal terakhir -->
+                            <button type="button" x-show="currentTab === {{ count($questions) - 1 }}"
+                                @click="$dispatch('open-confirm-modal')"
+                                class="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all text-sm sm:text-base">
+                                Selesai
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
