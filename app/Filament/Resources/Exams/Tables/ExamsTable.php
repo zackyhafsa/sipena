@@ -26,6 +26,12 @@ class ExamsTable
                     ->sortable(),
                 ToggleColumn::make('is_active')
                     ->label('Status Aktif'),
+                TextColumn::make('token')
+                    ->label('Token')
+                    ->copyable()
+                    ->placeholder('Tanpa Token')
+                    ->badge()
+                    ->color('warning'),
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')
                     ->dateTime('d M Y')

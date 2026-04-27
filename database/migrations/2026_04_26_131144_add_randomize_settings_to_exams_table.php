@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('exams', function (Blueprint $table) {
-            $table->string('token')->nullable()->after('is_active');
+            $table->boolean('randomize_questions')->default(false)->after('token');
+            $table->boolean('randomize_answers')->default(false)->after('randomize_questions');
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('exams', function (Blueprint $table) {
-            $table->dropColumn('token');
+            $table->dropColumn(['randomize_questions', 'randomize_answers']);
         });
     }
 };

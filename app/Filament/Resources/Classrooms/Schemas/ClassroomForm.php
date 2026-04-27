@@ -15,6 +15,12 @@ class ClassroomForm
             ->schema([
                 Section::make('Informasi Kelas')
                     ->schema([
+                        Select::make('school_id')
+                            ->relationship('school', 'name')
+                            ->label('Asal Sekolah')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
                         TextInput::make('name')
                             ->label('Nama Kelas')
                             ->required()
@@ -23,9 +29,12 @@ class ClassroomForm
                         Select::make('level')
                             ->label('Tingkatan Kelas')
                             ->options([
-                                '10' => 'Kelas 10',
-                                '11' => 'Kelas 11',
-                                '12' => 'Kelas 12',
+                                '1' => 'Kelas 1',
+                                '2' => 'Kelas 2',
+                                '3' => 'Kelas 3',
+                                '4' => 'Kelas 4',
+                                '5' => 'Kelas 5',
+                                '6' => 'Kelas 6',
                             ])
                             ->required(),
                         TextInput::make('rombel')

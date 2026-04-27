@@ -38,6 +38,16 @@ class ExamResultsTable
                     ->sortable()
                     ->searchable(),
 
+                TextColumn::make('pg_score_display')
+                    ->label('Nilai PG')
+                    ->badge()
+                    ->color('info')
+                    ->getStateUsing(function ($record) {
+                        return (is_array($record->answers_log) && isset($record->answers_log['pg_score']))
+                            ? $record->answers_log['pg_score']
+                            : ($record->score ?? '0');
+                    }),
+
                 TextColumn::make('score')
                     ->label('Nilai Akhir')
                     ->badge()
@@ -55,7 +65,7 @@ class ExamResultsTable
                     ->boolean(),
 
                 TextColumn::make('cheat_warning_count')
-                    ->label('Pelanggaran (Pindah Tab)')
+                    ->label('Pelanggaran')
                     ->badge()
                     ->color(fn (string $state): string => $state > 0 ? 'danger' : 'success')
                     ->sortable(),
@@ -78,70 +88,141 @@ class ExamResultsTable
                     ->query(fn (Builder $query): Builder => $query->where('is_scored_manually', true)->whereNull('score')),
             ])
             ->actions([
-                Action::make('grade')
-                    ->label('Koreksi')
-                    ->icon('heroicon-o-check-badge')
-                    ->color('success')
-                    ->visible(fn ($record) => $record->is_scored_manually)
+                Action::make('cek_jawaban')
+                    ->label(fn ($record) => $record->is_scored_manually && $record->score === null ? 'Koreksi Esai' : 'Cek Jawaban')
+                    ->icon('heroicon-o-clipboard-document-check')
+                    ->color(fn ($record) => $record->is_scored_manually && $record->score === null ? 'warning' : 'info')
                     ->form(function ($record) {
                         $schemas = [];
 
                         $pgScore = 0;
-                        if (is_array($record->answers_log) && isset($record->answers_log['pg_score'])) {
-                            $pgScore = $record->answers_log['pg_score'];
-                        }
-
-                        $schemas[] = Placeholder::make('info')
-                            ->label('Informasi Pengerjaan')
-                            ->content(new HtmlString("<strong>Nilai Pilihan Ganda: {$pgScore}</strong>"));
-
-                        if (is_array($record->answers_log) && isset($record->answers_log['details'])) {
-                            foreach ($record->answers_log['details'] as $index => $detail) {
-                                if (($detail['type'] ?? '') === 'essay') {
-                                    $questionText = strip_tags($detail['question'] ?? 'Pertanyaan');
-                                    $correctAnswer = strip_tags($detail['correct_answer_essay'] ?? '-');
-                                    $userAnswer = strip_tags($detail['user_answer'] ?? '-');
-
-                                    $schemas[] = Placeholder::make("essay_{$index}")
-                                        ->label("Soal: {$questionText}")
-                                        ->content(new HtmlString("
-                                            <div class='mt-2 space-y-2'>
-                                                <div><span class='font-bold text-gray-700'>Kunci Jawaban:</span> <br> <span class='text-gray-600'>{$correctAnswer}</span></div>
-                                                <div><span class='font-bold text-gray-700'>Jawaban Siswa:</span> <br> <span class='text-blue-600'>{$userAnswer}</span></div>
-                                            </div>
-                                        "));
-                                }
+                        $answers = [];
+                        if (is_array($record->answers_log)) {
+                            if (isset($record->answers_log['pg_score'])) {
+                                $pgScore = $record->answers_log['pg_score'];
+                                $answers = $record->answers_log['answers'] ?? [];
+                            } else {
+                                $answers = $record->answers_log;
                             }
                         }
 
-                        $schemas[] = TextInput::make('manual_score')
-                            ->label('Total Nilai Keseluruhan')
+                        $schemas[] = Placeholder::make('info')
+                            ->label('Informasi Nilai Otomatis')
+                            ->content(new HtmlString("
+                                <div class='flex items-center gap-2'>
+                                    <span class='text-lg font-bold text-gray-800'>Skor Pilihan Ganda:</span>
+                                    <span class='px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold'>{$pgScore}</span>
+                                </div>
+                            "));
+
+                        // Load questions
+                        $questions = $record->exam->questions;
+
+                        foreach ($questions as $index => $question) {
+                            $num = $index + 1;
+                            $userAnswer = $answers[$question->id] ?? '-';
+
+                            if ($question->type === 'multiple_choice') {
+                                $correctAnswer = $question->correct_answer ?? '-';
+                                $isCorrect = $userAnswer === $correctAnswer;
+
+                                $statusBadge = $isCorrect
+                                    ? "<span class='px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold'>Benar</span>"
+                                    : "<span class='px-2 py-1 rounded-md bg-red-100 text-red-700 text-xs font-bold'>Salah</span>";
+
+                                $schemas[] = Placeholder::make("pg_{$question->id}")
+                                    ->label(new HtmlString("<span class='text-gray-700 font-semibold'>{$num}. Pilihan Ganda</span> {$statusBadge}"))
+                                    ->content(new HtmlString("
+                                        <div class='mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200'>
+                                            <div class='mb-3 text-gray-800 font-medium'>{$question->question_text}</div>
+                                            <div class='grid grid-cols-2 gap-4'>
+                                                <div>
+                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Jawaban Siswa</span>
+                                                    <div class='mt-1 text-lg font-bold ".($isCorrect ? 'text-green-600' : 'text-red-600')."'>{$userAnswer}</div>
+                                                </div>
+                                                <div>
+                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Kunci Jawaban</span>
+                                                    <div class='mt-1 text-lg font-bold text-gray-800'>{$correctAnswer}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    "));
+                            } else {
+                                $correctAnswerEssay = $question->correct_answer_essay ?: '<em>Tidak ada acuan khusus</em>';
+
+                                $schemas[] = Placeholder::make("essay_{$question->id}")
+                                    ->label(new HtmlString("<span class='text-indigo-700 font-semibold'>{$num}. Esai</span>"))
+                                    ->content(new HtmlString("
+                                        <div class='mt-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100'>
+                                            <div class='mb-3 text-gray-800 font-medium'>{$question->question_text}</div>
+                                            <div class='space-y-4'>
+                                                <div>
+                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Jawaban Siswa</span>
+                                                    <div class='mt-1 p-3 bg-white rounded-lg border border-gray-200 text-gray-800 whitespace-pre-wrap'>".($userAnswer === '-' ? '<em>Tidak dijawab</em>' : $userAnswer)."</div>
+                                                </div>
+                                                <div>
+                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Acuan Jawaban (Guru)</span>
+                                                    <div class='mt-1 p-3 bg-indigo-50 rounded-lg text-indigo-900 border border-indigo-100 whitespace-pre-wrap'>{$correctAnswerEssay}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    "));
+                            }
+                        }
+
+                        $schemas[] = TextInput::make('essay_score')
+                            ->label('Tambahan Nilai Esai')
                             ->numeric()
                             ->required()
-                            ->helperText('Masukkan total nilai akhir yang akan disimpan (Gabungan PG dan Esai).');
+                            ->helperText('Masukkan nilai khusus untuk jawaban esai saja. Nilai Akhir akan dihitung otomatis (Nilai PG + Nilai Esai).');
 
                         $schemas[] = Textarea::make('teacher_notes')
-                            ->label('Catatan Guru')
+                            ->label('Catatan Guru (Opsional)')
                             ->nullable();
 
                         return $schemas;
                     })
                     ->mountUsing(function (Action $action, $record) {
+                        $pgScore = (is_array($record->answers_log) && isset($record->answers_log['pg_score'])) ? $record->answers_log['pg_score'] : 0;
+
+                        $essayScore = 0;
+                        if ($record->score !== null) {
+                            $essayScore = max(0, $record->score - $pgScore);
+                        }
+
                         $action->fillForm([
-                            'manual_score' => $record->score ?? 0,
+                            'essay_score' => $essayScore,
                             'teacher_notes' => $record->teacher_notes,
                         ]);
                     })
                     ->action(function (array $data, $record): void {
+                        $pgScore = (is_array($record->answers_log) && isset($record->answers_log['pg_score'])) ? $record->answers_log['pg_score'] : 0;
+
                         $record->update([
-                            'score' => $data['manual_score'],
+                            'score' => $pgScore + $data['essay_score'],
                             'teacher_notes' => $data['teacher_notes'],
                         ]);
-                    }),
+                    })
+                    ->modalWidth('4xl')
+                    ->modalHeading(fn ($record) => 'Lembar Jawaban: '.$record->user->name),
                 DeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
+                    \Filament\Actions\BulkAction::make('export_pdf')
+                        ->label('Cetak Rekap (PDF)')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('danger')
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $records->load(['user.classroom', 'exam']);
+
+                            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.exam-results-pdf', [
+                                'records' => $records,
+                                'date' => now()->format('d M Y H:i'),
+                            ])->setPaper('a4', 'landscape');
+
+                            return response()->streamDownload(fn () => print($pdf->output()), 'rekap-hasil-ujian.pdf');
+                        }),
                     DeleteBulkAction::make(),
                 ]),
             ]);

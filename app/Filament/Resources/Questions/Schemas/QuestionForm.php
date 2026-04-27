@@ -33,7 +33,7 @@ class QuestionForm
                             ->label('Jenis Soal')
                             ->options([
                                 'multiple_choice' => 'Pilihan Ganda',
-                                'essay' => 'Esai'
+                                'essay' => 'Esai',
                             ])
                             ->default('multiple_choice')
                             ->reactive()
@@ -42,6 +42,14 @@ class QuestionForm
 
                 Section::make('Detail Pertanyaan & Jawaban')
                     ->schema([
+                        \Filament\Forms\Components\FileUpload::make('image_path')
+                            ->label('Gambar/Foto Soal (Opsional)')
+                            ->image()
+                            ->disk('public')
+                            ->directory('question-images')
+                            ->maxSize(1024)
+                            ->columnSpanFull(),
+
                         Textarea::make('question_text')
                             ->label('Pertanyaan')
                             ->required()
@@ -75,11 +83,10 @@ class QuestionForm
                             ->required(fn ($get) => $get('type') === 'multiple_choice')
                             ->visible(fn ($get) => $get('type') === 'multiple_choice')
                             ->columnSpanFull(),
-                            
+
                         Textarea::make('correct_answer_essay')
                             ->label('Acuan Jawaban Benar (Esai)')
-                            ->helperText('Diperuntukkan untuk referensi guru dalam memberikan nilai ujian esai siswa')
-                            ->required(fn ($get) => $get('type') === 'essay')
+                            ->helperText('Diperuntukkan untuk referensi guru dalam memberikan nilai ujian esai siswa (Opsional)')
                             ->visible(fn ($get) => $get('type') === 'essay')
                             ->columnSpanFull()
                             ->rows(4),

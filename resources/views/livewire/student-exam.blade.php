@@ -2,7 +2,7 @@
     <!-- Fullscreen Overlay -->
     <template x-teleport="body">
         <div x-show="!isFullscreen"
-            class="fixed inset-0 z-[100] bg-gray-900/95 flex items-center justify-center p-4 backdrop-blur-sm">
+            class="fixed inset-0 z-100 bg-gray-900/95 flex items-center justify-center p-4 backdrop-blur-sm">
             <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-gray-100">
                 <div
                     class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-50 mb-6 border border-red-100">
@@ -47,6 +47,7 @@
         }
     </style>
 
+
     <!-- Pengaturan Header / Top Bar -->
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sticky top-4 z-10">
         <div
@@ -87,7 +88,7 @@
 
             <!-- Kolom Kiri: Display Soal -->
             <div class="lg:w-3/4 w-full flex flex-col">
-                @foreach($questions as $index => $question)
+                @foreach ($questions as $index => $question)
                     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 min-h-150 flex flex-col"
                         id="question-{{ $index }}" x-show="currentTab === {{ $index }}"
                         x-transition:enter="transition ease-out duration-300"
@@ -104,38 +105,64 @@
                             </div>
                         </div>
 
-                        <div class="space-y-3.5 grow">
-                            @foreach(['option_a', 'option_b', 'option_c', 'option_d', 'option_e'] as $optionField)
-                                @if($question->$optionField)
-                                    <label class="flex items-start cursor-pointer group relative">
-                                        <input type="radio" wire:model="answers.{{ $question->id }}"
-                                            name="question_{{ $question->id }}" value="{{ strtoupper(substr($optionField, -1)) }}"
-                                            required class="peer sr-only option-radio">
+                        @if ($question->image_path)
+                            <div class="mt-4 mb-6">
+                                <img src="{{ asset('storage/' . $question->image_path) }}" alt="Gambar Soal" class="max-w-full max-h-96 h-auto rounded-lg shadow-sm border border-gray-200">
+                            </div>
+                        @endif
 
-                                        <div
-                                            class="w-full flex items-center p-4 md:p-5 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/50 transition-all duration-200">
-                                            <div class="flex items-center">
-                                                <div
-                                                    class="radio-dot w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-all duration-200 mr-4 group-hover:border-indigo-400">
-                                                    <svg class="radio-svg w-3.5 h-3.5 text-white opacity-0 transition-opacity duration-200"
-                                                        fill="currentColor" viewBox="0 0 20 20">
-                                                        <path
-                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                            clip-rule="evenodd" fill-rule="evenodd"></path>
-                                                    </svg>
+                        @if ($question->type === 'essay')
+                            <div class="mt-4 grow">
+                                <textarea wire:model.live.debounce.500ms="answers.{{ $question->id }}" rows="6"
+                                    class="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-gray-700"
+                                    placeholder="Ketik jawaban Anda di sini..."></textarea>
+                            </div>
+                        @else
+                            <div class="space-y-3.5 grow">
+                                @php
+                                    $optionsList = $this->shuffledOptions[$question->id] ?? [
+                                        'option_a',
+                                        'option_b',
+                                        'option_c',
+                                        'option_d',
+                                        'option_e',
+                                    ];
+                                    $displayLetters = ['A', 'B', 'C', 'D', 'E'];
+                                    $currentOptIdx = 0;
+                                @endphp
+                                @foreach ($optionsList as $optionField)
+                                    @if ($question->$optionField)
+                                        <label class="flex items-start cursor-pointer group relative">
+                                            <input type="radio" wire:model="answers.{{ $question->id }}"
+                                                name="question_{{ $question->id }}"
+                                                value="{{ strtoupper(substr($optionField, -1)) }}" required
+                                                class="peer sr-only option-radio">
+
+                                            <div
+                                                class="w-full flex items-center p-4 md:p-5 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/50 peer-checked:bg-indigo-50 peer-checked:border-indigo-500 transition-all duration-200">
+                                                <div class="flex items-center">
+                                                    <div
+                                                        class="radio-dot w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-all duration-200 mr-4 group-hover:border-indigo-400 peer-checked:border-indigo-500 peer-checked:bg-indigo-500">
+                                                        <svg class="radio-svg w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
+                                                            fill="currentColor" viewBox="0 0 20 20">
+                                                            <path
+                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                clip-rule="evenodd" fill-rule="evenodd"></path>
+                                                        </svg>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <span
-                                                class="radio-text text-gray-700 font-medium leading-relaxed transition-colors duration-200">
                                                 <span
-                                                    class="inline-block w-6 font-bold text-gray-400">{{ strtoupper(substr($optionField, -1)) }}.</span>
-                                                {{ $question->$optionField }}
-                                            </span>
-                                        </div>
-                                    </label>
-                                @endif
-                            @endforeach
-                        </div>
+                                                    class="radio-text text-gray-700 font-medium leading-relaxed transition-colors duration-200 peer-checked:text-indigo-800 peer-checked:font-bold">
+                                                    <span
+                                                        class="inline-block w-6 font-bold text-gray-400">{{ $displayLetters[$currentOptIdx++] }}.</span>
+                                                    {{ $question->$optionField }}
+                                                </span>
+                                            </div>
+                                        </label>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 @endforeach
 
@@ -144,7 +171,8 @@
                     class="mt-6 flex flex-col sm:flex-row items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-gray-200 gap-4 sm:gap-0">
                     <button type="button" :disabled="currentTab === 0"
                         @click="if(currentTab > 0) { currentTab--; window.scrollTo({top: 0, behavior: 'smooth'}) }"
-                        :class="currentTab === 0 ? 'opacity-50 cursor-not-allowed bg-gray-50 text-gray-400' : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400 shadow-sm'"
+                        :class="currentTab === 0 ? 'opacity-50 cursor-not-allowed bg-gray-50 text-gray-400' :
+                            'bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400 shadow-sm'"
                         class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border font-bold rounded-xl transition-all">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
@@ -185,7 +213,8 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 sticky top-30">
                     <div class="flex items-center gap-2 mb-6">
                         <div class="p-2 bg-indigo-50 rounded-lg">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
                                 </path>
@@ -195,18 +224,26 @@
                     </div>
 
                     <div class="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 mb-8">
-                        @foreach($questions as $index => $question)
+                        @foreach ($questions as $index => $question)
                             <button type="button"
-                                @click="currentTab = {{ $index }}; window.scrollTo({top: 0, behavior: 'smooth'})" :class="{
-                                                                'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab === {{ $index }},
-                                                                'bg-indigo-600 text-white border-transparent font-bold shadow-sm': '{{$question->id}}' in $wire.answers,
-                                                                'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50': !('{{$question->id}}' in $wire.answers)
-                                                            }"
+                                @click="currentTab = {{ $index }}; window.scrollTo({top: 0, behavior: 'smooth'})"
+                                :class="{
+                                    'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
+                                        {{ $index }},
+                                    'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
+                                        {{ $question->id }}],
+                                    'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
+                                        !$wire.answers[{{ $question->id }}]
+                                }"
                                 class="w-full aspect-square flex items-center justify-center rounded-xl border text-sm transition-all transform origin-center relative">
                                 {{ $index + 1 }}
                                 <!-- Indikator hijau kecil untuk soal yang sudah dijawab jika sedang tidak fokus -->
-                                <span x-show="'{{$question->id}}' in $wire.answers && currentTab !== {{ $index }}"
+                                <span
+                                    x-show="$wire.answers[{{ $question->id }}] && currentTab !== {{ $index }}"
                                     class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white"></span>
+                                @if ($question->type === 'essay')
+                                    <span class="absolute -bottom-1 -left-1 w-4 h-4 bg-amber-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-white">E</span>
+                                @endif
                             </button>
                         @endforeach
                     </div>
@@ -215,8 +252,12 @@
                         <div class="flex items-center gap-3 text-sm text-gray-600 mb-2">
                             <span class="w-3 h-3 rounded-full bg-indigo-600"></span> Sudah Dijawab
                         </div>
+                        <div class="flex items-center gap-3 text-sm text-gray-600 mb-2">
+                            <span class="w-3 h-3 rounded-full bg-white border-2 border-gray-200"></span> Belum
+                            Dijawab
+                        </div>
                         <div class="flex items-center gap-3 text-sm text-gray-600 mb-4">
-                            <span class="w-3 h-3 rounded-full bg-white border-2 border-gray-200"></span> Belum Dijawab
+                            <span class="w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center">E</span> Soal Essai
                         </div>
 
                         <button type="button" @click="$dispatch('open-confirm-modal')"
@@ -231,8 +272,8 @@
                         <!-- Modal Konfirmasi Selesai Ujian -->
                         <template x-teleport="body">
                             <div x-show="showConfirmModal" style="display: none;"
-                                class="fixed inset-0 z-150 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
-                                aria-modal="true">
+                                class="fixed inset-0 z-150 overflow-y-auto" aria-labelledby="modal-title"
+                                role="dialog" aria-modal="true">
                                 <div
                                     class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                                     <div x-show="showConfirmModal" x-transition.opacity
@@ -252,8 +293,8 @@
                                         <div class="sm:flex sm:items-start">
                                             <div
                                                 class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 sm:mx-0 sm:h-12 sm:w-12 border border-emerald-200">
-                                                <svg class="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
+                                                <svg class="h-6 w-6 text-emerald-600" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2" d="M5 13l4 4L19 7" />
                                                 </svg>
@@ -262,7 +303,8 @@
                                                 <h3 class="text-xl font-bold text-gray-900 mb-2" id="modal-title">
                                                     Konfirmasi Penyelesaian</h3>
                                                 <div class="text-base text-gray-600 space-y-2">
-                                                    <p>Apakah Anda yakin ingin mengumpulkan dan menyelesaikan ujian ini?
+                                                    <p>Apakah Anda yakin ingin mengumpulkan dan menyelesaikan ujian
+                                                        ini?
                                                         Pastikan semua jawaban telah terisi.</p>
                                                     <p
                                                         class="font-bold text-emerald-600 bg-emerald-50 p-3 rounded-lg border border-emerald-100 inline-block mt-3 w-full">
@@ -272,7 +314,8 @@
                                             </div>
                                         </div>
                                         <div class="mt-6 sm:mt-6 sm:flex sm:flex-row-reverse gap-3">
-                                            <button type="button" wire:click="submit" @click="showConfirmModal = false"
+                                            <button type="button" wire:click="submit"
+                                                @click="showConfirmModal = false"
                                                 class="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-sm px-4 py-3 bg-indigo-600 text-base font-bold text-white hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 sm:w-auto sm:text-sm transition-all">
                                                 Ya, Kumpulkan Ujian
                                             </button>
@@ -298,7 +341,8 @@
             aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div x-show="showWarning" x-transition.opacity
-                    class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
+                    class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" aria-hidden="true">
+                </div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
@@ -308,21 +352,24 @@
                     x-transition:leave="ease-in duration-200"
                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    class="relative z-10 inline-block align-bottom bg-white rounded-2xl px-4 pt-5 pb-6 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border-2 border-red-500">
+                    class="relative z-10 inline-block align-bottom bg-white rounded-2xl px-4 pt-5 pb-6 text-left shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border-2 border-red-500">
 
                     <div class="flex flex-col items-center text-center">
                         <div
                             class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-5 border-4 border-white shadow-sm -mt-12 relative z-10">
-                            <svg class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
 
-                        <h3 class="text-2xl font-black text-gray-900 mb-2" id="modal-title">Peringatan Keamanan!</h3>
+                        <h3 class="text-2xl font-black text-gray-900 mb-2" id="modal-title">Peringatan Keamanan!
+                        </h3>
 
                         <div class="mt-2 px-2">
-                            <p class="text-base text-gray-600 mb-4">Anda terdeteksi melanggar aturan dengan keluar dari
+                            <p class="text-base text-gray-600 mb-4">Anda terdeteksi melanggar aturan dengan keluar
+                                dari
                                 layar penuh atau berpindah aplikasi/tab.</p>
 
                             <div class="bg-red-50 rounded-xl p-4 border border-red-100 mb-4 inline-block w-full">
@@ -333,7 +380,8 @@
                                 </p>
                             </div>
 
-                            <p class="text-sm text-gray-500 font-medium">Jika batas pelanggaran terlampaui, ujian akan
+                            <p class="text-sm text-gray-500 font-medium">Jika batas pelanggaran terlampaui, ujian
+                                akan
                                 diakhiri secara paksa dengan nilai saat ini.</p>
                         </div>
                     </div>
@@ -352,74 +400,80 @@
 
     <!-- Security Check Script -->
     @script
-    <script>
-        Alpine.data('examSecurity', () => ({
-            currentTab: 0,
-            isFullscreen: false,
-            showWarning: false,
-            isProcessingViolation: false,
-            timeSinceLoad: Date.now(),
+        <script>
+            Alpine.data('examSecurity', () => ({
+                currentTab: 0,
+                isFullscreen: false,
+                showWarning: false,
+                isProcessingViolation: false,
+                timeSinceLoad: Date.now(),
 
-            init() {
-                this.isFullscreen = !!document.fullscreenElement;
-
-                document.addEventListener('fullscreenchange', () => {
+                init() {
                     this.isFullscreen = !!document.fullscreenElement;
-                    if (!this.isFullscreen && !this.showWarning) {
-                        this.handleViolation();
-                    }
-                });
 
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden && !this.showWarning) {
-                        this.handleViolation();
-                    }
-                });
-
-                window.addEventListener('blur', () => {
-                    if (!this.showWarning) {
-                        this.handleViolation();
-                    }
-                });
-
-                $wire.on('show-violation-warning', () => {
-                    this.showWarning = true;
-                });
-
-                $wire.on('show-fatal-warning', () => {
-                    $wire.forceSubmit();
-                });
-
-                // Keyboard shortcut navigation (Left/Right arrows)
-                window.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowRight' && this.currentTab < {{ count($questions) - 1 }}) {
-                        this.currentTab++;
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                    if (e.key === 'ArrowLeft' && this.currentTab > 0) {
-                        this.currentTab--;
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                });
-            },
-
-            enterFullscreen() {
-                let elem = document.documentElement;
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().then(() => {
-                        this.isFullscreen = true;
-                    }).catch(err => {
-                        console.error("Fullscreen error", err);
+                    document.addEventListener('fullscreenchange', () => {
+                        this.isFullscreen = !!document.fullscreenElement;
+                        if (!this.isFullscreen && !this.showWarning) {
+                            this.handleViolation();
+                        }
                     });
-                }
-            },
 
-            async handleViolation() {
-                if (this.isProcessingViolation || Date.now() - this.timeSinceLoad < 2000) return;
-                this.isProcessingViolation = true;
-                await $wire.registerViolation();
-            }
-        }));
-    </script>
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.hidden && !this.showWarning) {
+                            this.handleViolation();
+                        }
+                    });
+
+                    window.addEventListener('blur', () => {
+                        if (!this.showWarning) {
+                            this.handleViolation();
+                        }
+                    });
+
+                    $wire.on('show-violation-warning', () => {
+                        this.showWarning = true;
+                    });
+
+                    $wire.on('show-fatal-warning', () => {
+                        $wire.forceSubmit();
+                    });
+
+                    // Keyboard shortcut navigation (Left/Right arrows)
+                    window.addEventListener('keydown', (e) => {
+                        if (e.key === 'ArrowRight' && this.currentTab < {{ count($questions) - 1 }}) {
+                            this.currentTab++;
+                            window.scrollTo({
+                                top: 0,
+                                behavior: 'smooth'
+                            });
+                        }
+                        if (e.key === 'ArrowLeft' && this.currentTab > 0) {
+                            this.currentTab--;
+                            window.scrollTo({
+                                top: 0,
+                                behavior: 'smooth'
+                            });
+                        }
+                    });
+                },
+
+                enterFullscreen() {
+                    let elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().then(() => {
+                            this.isFullscreen = true;
+                        }).catch(err => {
+                            console.error("Fullscreen error", err);
+                        });
+                    }
+                },
+
+                async handleViolation() {
+                    if (this.isProcessingViolation || Date.now() - this.timeSinceLoad < 2000) return;
+                    this.isProcessingViolation = true;
+                    await $wire.registerViolation();
+                }
+            }));
+        </script>
     @endscript
 </div>

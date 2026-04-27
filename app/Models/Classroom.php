@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Classroom extends Model
 {
-    protected $fillable = ['name', 'level', 'rombel'];
+    protected $fillable = ['school_id', 'name', 'level', 'rombel'];
+
+    public function school()
+    {
+        return $this->belongsTo(School::class);
+    }
 
     public function users()
     {

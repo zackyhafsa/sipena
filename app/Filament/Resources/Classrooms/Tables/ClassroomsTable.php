@@ -16,6 +16,10 @@ class ClassroomsTable
         return $table
             ->columns([
                 TextColumn::make('name')->label('Nama Kelas')->searchable()->sortable(),
+                TextColumn::make('school.name')
+                    ->label('Asal Sekolah')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('level')
                     ->label('Tingkatan')
                     ->sortable(),

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('exams', function (Blueprint $table) {
-            $table->string('token')->nullable()->after('is_active');
+        Schema::table('classrooms', function (Blueprint $table) {
+            $table->foreignId('school_id')->nullable()->after('id')->constrained()->nullOnDelete();
         });
     }
 
@@ -21,8 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('exams', function (Blueprint $table) {
-            $table->dropColumn('token');
+        Schema::table('classrooms', function (Blueprint $table) {
+            $table->dropForeign(['school_id']);
+            $table->dropColumn('school_id');
         });
     }
 };

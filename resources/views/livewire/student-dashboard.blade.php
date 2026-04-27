@@ -70,15 +70,91 @@
                                     Ujian Selesai
                                 </button>
                             @else
-                                <a href="{{ route('student.exam', $exam->id) }}" class="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm focus:ring-4 focus:ring-indigo-100 focus:outline-none">
+                                <button type="button" wire:click="openTokenModal({{ $exam->id }})"
+                                    class="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm focus:ring-4 focus:ring-indigo-100 focus:outline-none">
                                     Mulai Ujian
-                                </a>
+                                </button>
                             @endif
                         </div>
                     </div>
                 @endforeach
             </div>
         @endif
+    </div>
+
+    {{-- Token Verification Modal --}}
+    <div x-data="{ show: @entangle('showTokenModal') }"
+         x-show="show"
+         style="display: none;"
+         class="fixed inset-0 z-50 overflow-y-auto"
+         aria-labelledby="token-modal-title" role="dialog" aria-modal="true"
+         x-cloak>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div x-show="show"
+                 x-transition:enter="transition-opacity ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition-opacity ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
+                 wire:click="closeTokenModal"></div>
+
+            <div x-show="show"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative z-10 bg-white rounded-2xl shadow-2xl max-w-sm w-full p-7 border border-gray-100 text-center transform">
+
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-indigo-50 mb-5 border border-indigo-100">
+                    <svg class="h-7 w-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                        </path>
+                    </svg>
+                </div>
+
+                <h3 class="text-lg font-bold text-gray-900 mb-1" id="token-modal-title">Masukkan Token Ujian</h3>
+                <p class="text-gray-500 text-sm mb-6">Masukkan token dari guru/pengawas untuk memulai.</p>
+
+                <div class="space-y-3">
+                    <div>
+                        <input type="text" wire:model="inputToken"
+                            wire:keydown.enter="verifyToken"
+                            class="w-full text-center text-xl font-bold tracking-[0.4em] uppercase px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-gray-300 placeholder:tracking-normal placeholder:text-sm placeholder:font-normal"
+                            placeholder="Masukkan token"
+                            maxlength="20"
+                            autocomplete="off"
+                            autofocus>
+                        @error('inputToken')
+                            <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button type="button" wire:click="verifyToken"
+                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                        wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="verifyToken">Verifikasi & Mulai</span>
+                        <span wire:loading wire:target="verifyToken" class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Memverifikasi...
+                        </span>
+                    </button>
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-gray-100">
+                    <button type="button" wire:click="closeTokenModal" class="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
