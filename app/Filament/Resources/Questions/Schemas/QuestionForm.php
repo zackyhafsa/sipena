@@ -47,6 +47,8 @@ class QuestionForm
                             ->image()
                             ->disk('public')
                             ->directory('question-images')
+                            ->visibility('public')
+                            ->imagePreviewHeight('150')
                             ->maxSize(1024)
                             ->columnSpanFull(),
 

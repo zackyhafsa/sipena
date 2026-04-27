@@ -235,15 +235,12 @@
                                     'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
                                         !$wire.answers[{{ $question->id }}]
                                 }"
-                                class="w-full aspect-square flex items-center justify-center rounded-xl border text-sm transition-all transform origin-center relative">
+                                class="w-full aspect-square flex flex-col items-center justify-center rounded-xl border text-sm transition-all transform origin-center relative {{ $question->type === 'essay' ? 'border-b-[3px] border-b-amber-500' : '' }}">
                                 {{ $index + 1 }}
                                 <!-- Indikator hijau kecil untuk soal yang sudah dijawab jika sedang tidak fokus -->
                                 <span
                                     x-show="$wire.answers[{{ $question->id }}] && currentTab !== {{ $index }}"
                                     class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white"></span>
-                                @if ($question->type === 'essay')
-                                    <span class="absolute -bottom-1 -left-1 w-4 h-4 bg-amber-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-white">E</span>
-                                @endif
                             </button>
                         @endforeach
                     </div>
@@ -257,7 +254,7 @@
                             Dijawab
                         </div>
                         <div class="flex items-center gap-3 text-sm text-gray-600 mb-4">
-                            <span class="w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center">E</span> Soal Essai
+                            <span class="w-5 h-3 rounded-sm border-b-[3px] border-b-amber-500 bg-gray-100"></span> Soal Essai
                         </div>
 
                         <button type="button" @click="$dispatch('open-confirm-modal')"

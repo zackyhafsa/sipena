@@ -12,7 +12,7 @@ class StudentStatsWidget extends StatsOverviewWidget
         $totalSiswa = \App\Models\User::where('role', 'student');
         $ujianSelesai = \App\Models\ExamResult::whereNotNull('score');
         $avgScore = \App\Models\ExamResult::whereNotNull('score');
-        $totalPelanggaran = \App\Models\ExamResult::where('violations_count', '>', 0);
+        $totalPelanggaran = \App\Models\ExamResult::where('cheat_warning_count', '>', 0);
 
         if (auth()->check() && auth()->user()->role === 'admin') {
             $classroomId = auth()->user()->classroom_id;
