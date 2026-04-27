@@ -130,11 +130,18 @@ class ExamResultsTable
                                     ? "<span class='px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold'>Benar</span>"
                                     : "<span class='px-2 py-1 rounded-md bg-red-100 text-red-700 text-xs font-bold'>Salah</span>";
 
+                                $imageHtml = '';
+                                if ($question->image_path) {
+                                    $imageUrl = asset('storage/' . $question->image_path);
+                                    $imageHtml = "<div class='mb-3'><img src='{$imageUrl}' alt='Gambar Soal' style='max-width:100%;max-height:200px;border-radius:8px;border:1px solid #e5e7eb;'></div>";
+                                }
+
                                 $schemas[] = Placeholder::make("pg_{$question->id}")
                                     ->label(new HtmlString("<span class='text-gray-700 font-semibold'>{$num}. Pilihan Ganda</span> {$statusBadge}"))
                                     ->content(new HtmlString("
                                         <div class='mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200'>
                                             <div class='mb-3 text-gray-800 font-medium'>{$question->question_text}</div>
+                                            {$imageHtml}
                                             <div class='grid grid-cols-2 gap-4'>
                                                 <div>
                                                     <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Jawaban Siswa</span>
@@ -150,11 +157,18 @@ class ExamResultsTable
                             } else {
                                 $correctAnswerEssay = $question->correct_answer_essay ?: '<em>Tidak ada acuan khusus</em>';
 
+                                $imageHtml = '';
+                                if ($question->image_path) {
+                                    $imageUrl = asset('storage/' . $question->image_path);
+                                    $imageHtml = "<div class='mb-3'><img src='{$imageUrl}' alt='Gambar Soal' style='max-width:100%;max-height:200px;border-radius:8px;border:1px solid #e5e7eb;'></div>";
+                                }
+
                                 $schemas[] = Placeholder::make("essay_{$question->id}")
                                     ->label(new HtmlString("<span class='text-indigo-700 font-semibold'>{$num}. Esai</span>"))
                                     ->content(new HtmlString("
                                         <div class='mt-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100'>
                                             <div class='mb-3 text-gray-800 font-medium'>{$question->question_text}</div>
+                                            {$imageHtml}
                                             <div class='space-y-4'>
                                                 <div>
                                                     <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Jawaban Siswa</span>
