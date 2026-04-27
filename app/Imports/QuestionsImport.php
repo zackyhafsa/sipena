@@ -21,14 +21,16 @@ class QuestionsImport implements ToModel, WithHeadingRow
         // Pastikan nama kolom di Excel persis seperti yang di dalam kurung siku ['...']
         return new Question([
             'exam_id' => $this->exam_id,
-            'question_text' => $row['pertanyaan'],
-            'option_a' => $row['opsi_a'],
-            'option_b' => $row['opsi_b'],
-            'option_c' => $row['opsi_c'],
-            'option_d' => $row['opsi_d'],
-            'option_e' => $row['opsi_e'] ?? null, // Opsional
-            'correct_answer' => strtoupper($row['kunci_jawaban']), // Memastikan huruf besar (A, B, C, D, E)
-            'score_weight' => $row['bobot'] ?? 1,
+            'type' => $row['type'] ?? 'multiple_choice',
+            'question_text' => $row['question_text'],
+            'option_a' => $row['option_a'] ?? null,
+            'option_b' => $row['option_b'] ?? null,
+            'option_c' => $row['option_c'] ?? null,
+            'option_d' => $row['option_d'] ?? null,
+            'option_e' => $row['option_e'] ?? null,
+            'correct_answer' => !empty($row['correct_answer']) ? strtoupper($row['correct_answer']) : null,
+            'correct_answer_essay' => $row['correct_answer_essay'] ?? null,
+            'score_weight' => $row['score_weight'] ?? 1,
         ]);
     }
 }
