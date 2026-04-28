@@ -133,7 +133,7 @@
                                 @foreach ($optionsList as $optionField)
                                     @if ($question->$optionField)
                                         <label class="flex items-start cursor-pointer group relative">
-                                            <input type="radio" wire:model="answers.{{ $question->id }}"
+                                            <input type="radio" wire:model.live="answers.{{ $question->id }}"
                                                 name="question_{{ $question->id }}"
                                                 value="{{ strtoupper(substr($optionField, -1)) }}" required
                                                 class="peer sr-only option-radio">
