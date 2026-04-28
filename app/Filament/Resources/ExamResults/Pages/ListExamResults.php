@@ -12,7 +12,9 @@ class ListExamResults extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make(),
+            \Filament\Actions\CreateAction::make()
+                ->label('Input Nilai Manual')
+                ->icon('heroicon-o-plus'),
             \Filament\Actions\Action::make('export_pdf')
                 ->label('Cetak Rekap (PDF)')
                 ->icon('heroicon-o-document-arrow-down')
