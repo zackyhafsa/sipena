@@ -58,31 +58,69 @@ class StudentExam extends Component
             return;
         }
 
-        if ($this->exam->randomize_questions) {
-            $pgQuestions = $this->exam->questions->where('type', '!=', 'essay')->shuffle();
-            $essayQuestions = $this->exam->questions->where('type', 'essay')->shuffle();
-            $this->questions = $pgQuestions->merge($essayQuestions)->values();
-        } else {
-            $this->questions = $this->exam->questions;
-        }
+        $progressKey = "exam_progress_{$this->exam_id}_" . auth()->id();
+        if (session()->has($progressKey)) {
+            $progress = session()->get($progressKey);
+            $this->answers = $progress['answers'] ?? [];
+            $this->violationCount = $progress['violationCount'] ?? 0;
+            $this->shuffledOptions = $progress['shuffledOptions'] ?? [];
+            $this->started_at = $progress['started_at'] ?? now()->toDateTimeString();
+            $this->currentQuestionIndex = $progress['currentQuestionIndex'] ?? 0;
 
-        foreach ($this->questions as $question) {
-            $this->answers[$question->id] = null;
-
-            if ($this->exam->randomize_answers && $question->type === 'multiple_choice') {
-                $opts = ['option_a', 'option_b', 'option_c', 'option_d', 'option_e'];
-                shuffle($opts);
-                $this->shuffledOptions[$question->id] = $opts;
+            $orderedIds = $progress['questions'] ?? [];
+            $questionsMap = $this->exam->questions->keyBy('id');
+            $this->questions = collect($orderedIds)->map(fn($id) => $questionsMap->get($id))->filter()->values();
+            
+            if ($this->questions->isEmpty()) {
+                $this->questions = $this->exam->questions;
             }
-        }
+        } else {
+            if ($this->exam->randomize_questions) {
+                $pgQuestions = $this->exam->questions->where('type', '!=', 'essay')->shuffle();
+                $essayQuestions = $this->exam->questions->where('type', 'essay')->shuffle();
+                $this->questions = $pgQuestions->merge($essayQuestions)->values();
+            } else {
+                $this->questions = $this->exam->questions;
+            }
 
-        $this->started_at = now()->toDateTimeString();
+            foreach ($this->questions as $question) {
+                $this->answers[$question->id] = null;
+
+                if ($this->exam->randomize_answers && $question->type === 'multiple_choice') {
+                    $opts = ['option_a', 'option_b', 'option_c', 'option_d', 'option_e'];
+                    shuffle($opts);
+                    $this->shuffledOptions[$question->id] = $opts;
+                }
+            }
+
+            $this->started_at = now()->toDateTimeString();
+            $this->saveProgressToSession();
+        }
+    }
+
+    public function updated($propertyName)
+    {
+        $this->saveProgressToSession();
+    }
+
+    public function saveProgressToSession()
+    {
+        $progressKey = "exam_progress_{$this->exam_id}_" . auth()->id();
+        session()->put($progressKey, [
+            'answers' => $this->answers,
+            'violationCount' => $this->violationCount,
+            'shuffledOptions' => $this->shuffledOptions,
+            'questions' => $this->questions->pluck('id')->toArray(),
+            'started_at' => $this->started_at,
+            'currentQuestionIndex' => $this->currentQuestionIndex,
+        ]);
     }
 
     public function goToQuestion($index)
     {
         if (isset($this->questions[$index])) {
             $this->currentQuestionIndex = $index;
+            $this->saveProgressToSession();
         }
     }
 
@@ -90,6 +128,7 @@ class StudentExam extends Component
     {
         if ($this->currentQuestionIndex < count($this->questions) - 1) {
             $this->currentQuestionIndex++;
+            $this->saveProgressToSession();
         }
     }
 
@@ -97,6 +136,7 @@ class StudentExam extends Component
     {
         if ($this->currentQuestionIndex > 0) {
             $this->currentQuestionIndex--;
+            $this->saveProgressToSession();
         }
     }
 
@@ -108,6 +148,7 @@ class StudentExam extends Component
         }
 
         $this->violationCount++;
+        $this->saveProgressToSession();
 
         if ($this->violationCount >= $this->exam->max_violations) {
             $this->dispatch('show-fatal-warning');
@@ -190,6 +231,14 @@ class StudentExam extends Component
             'finished_at' => now(),
             'is_scored_manually' => $hasEssay,
         ]);
+
+        $this->clearProgressSession();
+    }
+
+    private function clearProgressSession()
+    {
+        $progressKey = "exam_progress_{$this->exam_id}_" . auth()->id();
+        session()->forget($progressKey);
     }
 
     public function render()
