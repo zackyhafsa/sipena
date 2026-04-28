@@ -16,11 +16,13 @@ class Exam extends Model
         'pg_weight',
         'essay_weight',
         'max_violations',
+        'show_result_on_completion',
     ];
 
     protected $casts = [
         'randomize_questions' => 'boolean',
         'randomize_answers' => 'boolean',
+        'show_result_on_completion' => 'boolean',
     ];
 
     public function questions(): HasMany

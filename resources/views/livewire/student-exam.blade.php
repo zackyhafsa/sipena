@@ -131,7 +131,8 @@
                                     $currentOptIdx = 0;
                                 @endphp
                                 @foreach ($optionsList as $optionField)
-                                    @if ($question->$optionField)
+                                    @php $imageField = $optionField . '_image'; @endphp
+                                    @if ($question->$optionField || $question->$imageField)
                                         <label class="flex items-start cursor-pointer group relative">
                                             <input type="radio" wire:model.live="answers.{{ $question->id }}"
                                                 name="question_{{ $question->id }}"
@@ -139,8 +140,8 @@
                                                 class="peer sr-only option-radio">
 
                                             <div
-                                                class="w-full flex items-center p-4 md:p-5 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/50 peer-checked:bg-indigo-50 peer-checked:border-indigo-500 transition-all duration-200">
-                                                <div class="flex items-center">
+                                                class="w-full flex items-start p-4 md:p-5 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/50 peer-checked:bg-indigo-50 peer-checked:border-indigo-500 transition-all duration-200">
+                                                <div class="flex items-center mt-1">
                                                     <div
                                                         class="radio-dot w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center shrink-0 transition-all duration-200 mr-4 group-hover:border-indigo-400 peer-checked:border-indigo-500 peer-checked:bg-indigo-500">
                                                         <svg class="radio-svg w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200"
@@ -151,12 +152,24 @@
                                                         </svg>
                                                     </div>
                                                 </div>
-                                                <span
-                                                    class="radio-text text-gray-700 font-medium leading-relaxed transition-colors duration-200 peer-checked:text-indigo-800 peer-checked:font-bold">
-                                                    <span
-                                                        class="inline-block w-6 font-bold text-gray-400">{{ $displayLetters[$currentOptIdx++] }}.</span>
-                                                    {{ $question->$optionField }}
-                                                </span>
+                                                <div class="flex flex-col w-full">
+                                                    <div class="flex items-start w-full">
+                                                        <span class="inline-block w-6 font-bold text-gray-400 mt-1">{{ $displayLetters[$currentOptIdx++] }}.</span>
+                                                        <div class="flex flex-col gap-3 w-full">
+                                                            @if ($question->$imageField)
+                                                                <img src="{{ asset('storage/' . $question->$imageField) }}"
+                                                                    alt="Opsi {{ $displayLetters[$currentOptIdx - 1] }}"
+                                                                    class="max-w-xs md:max-w-md max-h-48 rounded-lg shadow-sm object-contain bg-white border border-gray-100">
+                                                            @endif
+                                                            @if ($question->$optionField)
+                                                                <span
+                                                                    class="radio-text text-gray-700 font-medium leading-relaxed transition-colors duration-200 peer-checked:text-indigo-800 peer-checked:font-bold">
+                                                                    {{ $question->$optionField }}
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </label>
                                     @endif

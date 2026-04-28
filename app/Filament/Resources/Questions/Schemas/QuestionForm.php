@@ -58,17 +58,66 @@ class QuestionForm
                             ->columnSpanFull()
                             ->rows(4),
 
-                        Grid::make(2)
+                        Grid::make(1)
                             ->schema([
-                                TextInput::make('option_a')->label('Opsi A')
-                                    ->required(fn ($get) => $get('type') === 'multiple_choice'),
-                                TextInput::make('option_b')->label('Opsi B')
-                                    ->required(fn ($get) => $get('type') === 'multiple_choice'),
-                                TextInput::make('option_c')->label('Opsi C')
-                                    ->required(fn ($get) => $get('type') === 'multiple_choice'),
-                                TextInput::make('option_d')->label('Opsi D')
-                                    ->required(fn ($get) => $get('type') === 'multiple_choice'),
-                                TextInput::make('option_e')->label('Opsi E (Opsional)'),
+                                \Filament\Schemas\Components\Fieldset::make('Opsi A')
+                                    ->schema([
+                                        TextInput::make('option_a')
+                                            ->label('Teks Opsi A')
+                                            ->required(fn ($get) => $get('type') === 'multiple_choice' && empty($get('option_a_image'))),
+                                        \Filament\Forms\Components\FileUpload::make('option_a_image')
+                                            ->label('Gambar Opsi A (Opsional)')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('question-options'),
+                                    ])->columns(2),
+
+                                \Filament\Schemas\Components\Fieldset::make('Opsi B')
+                                    ->schema([
+                                        TextInput::make('option_b')
+                                            ->label('Teks Opsi B')
+                                            ->required(fn ($get) => $get('type') === 'multiple_choice' && empty($get('option_b_image'))),
+                                        \Filament\Forms\Components\FileUpload::make('option_b_image')
+                                            ->label('Gambar Opsi B (Opsional)')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('question-options'),
+                                    ])->columns(2),
+
+                                \Filament\Schemas\Components\Fieldset::make('Opsi C')
+                                    ->schema([
+                                        TextInput::make('option_c')
+                                            ->label('Teks Opsi C')
+                                            ->required(fn ($get) => $get('type') === 'multiple_choice' && empty($get('option_c_image'))),
+                                        \Filament\Forms\Components\FileUpload::make('option_c_image')
+                                            ->label('Gambar Opsi C (Opsional)')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('question-options'),
+                                    ])->columns(2),
+
+                                \Filament\Schemas\Components\Fieldset::make('Opsi D')
+                                    ->schema([
+                                        TextInput::make('option_d')
+                                            ->label('Teks Opsi D')
+                                            ->required(fn ($get) => $get('type') === 'multiple_choice' && empty($get('option_d_image'))),
+                                        \Filament\Forms\Components\FileUpload::make('option_d_image')
+                                            ->label('Gambar Opsi D (Opsional)')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('question-options'),
+                                    ])->columns(2),
+
+                                \Filament\Schemas\Components\Fieldset::make('Opsi E (Opsional)')
+                                    ->schema([
+                                        TextInput::make('option_e')
+                                            ->label('Teks Opsi E'),
+                                        \Filament\Forms\Components\FileUpload::make('option_e_image')
+                                            ->label('Gambar Opsi E (Opsional)')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('question-options'),
+                                    ])->columns(2),
                             ])
                             ->visible(fn ($get) => $get('type') === 'multiple_choice'),
 

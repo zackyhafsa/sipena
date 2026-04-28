@@ -66,9 +66,38 @@
 
                         <div class="p-6 pt-0 mt-auto">
                             @if($isCompleted)
-                                <button disabled class="w-full bg-gray-100 text-gray-400 font-medium py-3 px-4 rounded-xl cursor-not-allowed border border-gray-200">
-                                    Ujian Selesai
-                                </button>
+                                @php $result = $completedExams[$exam->id]; @endphp
+                                @if($exam->show_result_on_completion)
+                                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+                                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Ringkasan Nilai</h4>
+                                        <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+                                            <div class="bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                                                <span class="block text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">PG</span>
+                                                <span class="font-black text-indigo-600">{{ $result->score_pg ?? 0 }}</span>
+                                            </div>
+                                            <div class="bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                                                <span class="block text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Essai</span>
+                                                @if($result->is_scored_manually && $result->score_essay === null)
+                                                    <span class="font-medium text-amber-500 text-xs">Proses</span>
+                                                @else
+                                                    <span class="font-black text-indigo-600">{{ $result->score_essay ?? 0 }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl shadow-sm">
+                                            <span class="block text-indigo-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Nilai Akhir</span>
+                                            @if($result->is_scored_manually && $result->score === null)
+                                                <span class="text-sm font-black text-amber-600">Menunggu Penilaian</span>
+                                            @else
+                                                <span class="text-2xl font-black text-indigo-700">{{ $result->score ?? $result->score_pg ?? 0 }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @else
+                                    <button disabled class="w-full bg-gray-100 text-gray-400 font-medium py-3 px-4 rounded-xl cursor-not-allowed border border-gray-200">
+                                        Ujian Selesai
+                                    </button>
+                                @endif
                             @else
                                 <button type="button" wire:click="openTokenModal({{ $exam->id }})"
                                     class="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-colors shadow-sm focus:ring-4 focus:ring-indigo-100 focus:outline-none">

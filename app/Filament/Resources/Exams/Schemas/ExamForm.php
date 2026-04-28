@@ -39,6 +39,10 @@ class ExamForm
                             ->label('Acak Pilihan Ganda')
                             ->helperText('Jika dinyalakan, opsi A-E pada soal pilihan ganda akan diacak posisinya.')
                             ->default(false),
+                        Toggle::make('show_result_on_completion')
+                            ->label('Tampilkan Nilai ke Siswa')
+                            ->helperText('Jika dinyalakan, siswa dapat langsung melihat nilai Pilihan Ganda dan rincian nilai lainnya setelah menyelesaikan ujian.')
+                            ->default(true),
                     ])
                     ->columns(2),
                 Section::make('Pengaturan Penilaian & Keamanan')
