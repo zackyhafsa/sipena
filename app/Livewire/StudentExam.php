@@ -71,6 +71,25 @@ class StudentExam extends Component
             $questionsMap = $this->exam->questions->keyBy('id');
             $this->questions = collect($orderedIds)->map(fn($id) => $questionsMap->get($id))->filter()->values();
             
+            // Tambahkan soal baru jika ada yang baru dimasukkan guru
+            $newQuestions = $this->exam->questions->filter(fn($q) => !in_array($q->id, $orderedIds))->values();
+            if ($newQuestions->isNotEmpty()) {
+                $this->questions = $this->questions->merge($newQuestions);
+                
+                foreach ($newQuestions as $question) {
+                    if (!array_key_exists($question->id, $this->answers)) {
+                        $this->answers[$question->id] = null;
+                    }
+                    if ($this->exam->randomize_answers && $question->type === 'multiple_choice' && !isset($this->shuffledOptions[$question->id])) {
+                        $opts = ['option_a', 'option_b', 'option_c', 'option_d', 'option_e'];
+                        shuffle($opts);
+                        $this->shuffledOptions[$question->id] = $opts;
+                    }
+                }
+                
+                $this->saveProgressToSession();
+            }
+            
             if ($this->questions->isEmpty()) {
                 $this->questions = $this->exam->questions;
             }
