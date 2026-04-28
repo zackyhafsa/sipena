@@ -7,7 +7,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class School extends Model
 {
-    protected $fillable = ['name', 'logo', 'regency'];
+    protected $fillable = [
+        'name',
+        'logo',
+        'logo_kabupaten',
+        'regency',
+        'address',
+        'phone',
+        'email',
+    ];
 
     public function users(): HasMany
     {
@@ -17,5 +25,10 @@ class School extends Model
     public function classrooms(): HasMany
     {
         return $this->hasMany(Classroom::class);
+    }
+
+    public function exams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Exam::class)->withPivot('is_active', 'token')->withTimestamps();
     }
 }

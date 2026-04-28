@@ -51,6 +51,12 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+                fn () => auth()->check() && auth()->user()->role === 'superadmin'
+                    ? \Illuminate\Support\Facades\Blade::render('@livewire("school-switcher")')
+                    : '',
+            )
             ->authMiddleware([
                 Authenticate::class,
             ]);

@@ -379,9 +379,12 @@
 
                             <div class="bg-red-50 rounded-xl p-4 border border-red-100 mb-4 inline-block w-full">
                                 <p class="text-sm font-bold text-red-800">
-                                    Teguran ke: <span class="text-xl" x-text="$wire.violationCount"></span> <span
-                                        class="text-red-400 font-medium">dari</span> <span
-                                        x-text="$wire.maxViolations"></span>
+                                    Teguran ke: <span class="text-xl" x-text="$wire.violationCount"></span> 
+                                    <template x-if="$wire.maxViolations > 0">
+                                        <span>
+                                            <span class="text-red-400 font-medium">dari</span> <span x-text="$wire.maxViolations"></span>
+                                        </span>
+                                    </template>
                                 </p>
                             </div>
 

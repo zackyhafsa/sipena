@@ -13,13 +13,27 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class SchoolResource extends Resource
 {
     protected static ?string $model = School::class;
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $schoolId = \App\Helpers\SchoolContext::getActiveSchoolId();
+
+        if ($schoolId) {
+            $query->where('id', $schoolId);
+        }
+
+        return $query;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
@@ -41,12 +55,29 @@ class SchoolResource extends Resource
                     ->label('Kabupaten/Kota')
                     ->required()
                     ->maxLength(255),
+                Textarea::make('address')
+                    ->label('Alamat Lengkap')
+                    ->maxLength(500)
+                    ->columnSpanFull(),
+                TextInput::make('phone')
+                    ->label('No. Telepon')
+                    ->tel()
+                    ->maxLength(20),
+                TextInput::make('email')
+                    ->label('Email')
+                    ->email()
+                    ->maxLength(255),
                 FileUpload::make('logo')
                     ->label('Logo Sekolah')
                     ->image()
                     ->directory('school-logos')
-                    ->maxSize(2048)
-            ])->columns(1);
+                    ->maxSize(2048),
+                FileUpload::make('logo_kabupaten')
+                    ->label('Logo Kabupaten/Kota')
+                    ->image()
+                    ->directory('kabupaten-logos')
+                    ->maxSize(2048),
+            ])->columns(2);
     }
 
     public static function table(Table $table): Table

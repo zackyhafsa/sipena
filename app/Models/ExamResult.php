@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ExamResult extends Model
 {
     protected $fillable = [
-        'user_id', 'exam_id', 'score', 'answers_log',
+        'user_id', 'exam_id', 'score', 'score_pg', 'score_essay', 'answers_log',
         'cheat_warning_count', 'started_at', 'finished_at',
         'is_scored_manually', 'teacher_notes'
     ];

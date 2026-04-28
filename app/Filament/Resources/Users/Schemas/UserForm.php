@@ -45,7 +45,14 @@ class UserForm
                             ->relationship('classroom', 'name')
                             ->preload()
                             ->searchable()
-                            ->helperText('Hanya wajib diisi jika role adalah Siswa.')
+                            ->helperText('Hanya wajib diisi jika role adalah Siswa.'),
+                        Select::make('school_id')
+                            ->label('Sekolah')
+                            ->relationship('school', 'name')
+                            ->preload()
+                            ->searchable()
+                            ->visible(fn () => auth()->user()->role === 'superadmin')
+                            ->helperText('Wajib diisi jika role adalah Admin (Guru) atau Siswa.')
                     ])->columns(2)
             ]);
     }

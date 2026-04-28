@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class QuestionResource extends Resource
 {
@@ -26,6 +27,26 @@ class QuestionResource extends Resource
     protected static ?string $modelLabel = 'Soal';
 
     protected static ?string $pluralModelLabel = 'Daftar Soal';
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery();
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->role === 'superadmin';
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()->role === 'superadmin';
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()->role === 'superadmin';
+    }
 
     public static function form(Schema $schema): Schema
     {

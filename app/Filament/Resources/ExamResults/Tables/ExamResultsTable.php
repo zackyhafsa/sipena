@@ -38,15 +38,18 @@ class ExamResultsTable
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('pg_score_display')
-                    ->label('Nilai PG')
+                TextColumn::make('score_pg')
+                    ->label('Nilai PG (100)')
                     ->badge()
                     ->color('info')
-                    ->getStateUsing(function ($record) {
-                        return (is_array($record->answers_log) && isset($record->answers_log['pg_score']))
-                            ? $record->answers_log['pg_score']
-                            : ($record->score ?? '0');
-                    }),
+                    ->sortable(),
+
+                TextColumn::make('score_essay')
+                    ->label('Nilai Esai (100)')
+                    ->badge()
+                    ->color('primary')
+                    ->formatStateUsing(fn (?string $state, $record): string => $state !== null ? $state : ($record->is_scored_manually ? 'Menunggu Koreksi' : '0'))
+                    ->sortable(),
 
                 TextColumn::make('score')
                     ->label('Nilai Akhir')
@@ -95,22 +98,14 @@ class ExamResultsTable
                     ->form(function ($record) {
                         $schemas = [];
 
-                        $pgScore = 0;
-                        $answers = [];
-                        if (is_array($record->answers_log)) {
-                            if (isset($record->answers_log['pg_score'])) {
-                                $pgScore = $record->answers_log['pg_score'];
-                                $answers = $record->answers_log['answers'] ?? [];
-                            } else {
-                                $answers = $record->answers_log;
-                            }
-                        }
+                        $pgScore = $record->score_pg ?? 0;
+                        $answers = is_array($record->answers_log) ? ($record->answers_log['answers'] ?? $record->answers_log) : [];
 
                         $schemas[] = Placeholder::make('info')
                             ->label('Informasi Nilai Otomatis')
                             ->content(new HtmlString("
                                 <div class='flex items-center gap-2'>
-                                    <span class='text-lg font-bold text-gray-800'>Skor Pilihan Ganda:</span>
+                                    <span class='text-lg font-bold text-gray-800'>Skor Pilihan Ganda (Skala 100):</span>
                                     <span class='px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold'>{$pgScore}</span>
                                 </div>
                             "));
@@ -185,10 +180,12 @@ class ExamResultsTable
                         }
 
                         $schemas[] = TextInput::make('essay_score')
-                            ->label('Tambahan Nilai Esai')
+                            ->label('Nilai Esai (Skala 100)')
                             ->numeric()
                             ->required()
-                            ->helperText('Masukkan nilai khusus untuk jawaban esai saja. Nilai Akhir akan dihitung otomatis (Nilai PG + Nilai Esai).');
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->helperText('Masukkan nilai esai dalam skala 100. Nilai Akhir akan dihitung otomatis sesuai bobot (Nilai PG + Nilai Esai).');
 
                         $schemas[] = Textarea::make('teacher_notes')
                             ->label('Catatan Guru (Opsional)')
@@ -197,23 +194,26 @@ class ExamResultsTable
                         return $schemas;
                     })
                     ->mountUsing(function (Action $action, $record) {
-                        $pgScore = (is_array($record->answers_log) && isset($record->answers_log['pg_score'])) ? $record->answers_log['pg_score'] : 0;
-
-                        $essayScore = 0;
-                        if ($record->score !== null) {
-                            $essayScore = max(0, $record->score - $pgScore);
-                        }
-
                         $action->fillForm([
-                            'essay_score' => $essayScore,
+                            'essay_score' => $record->score_essay ?? 0,
                             'teacher_notes' => $record->teacher_notes,
                         ]);
                     })
                     ->action(function (array $data, $record): void {
-                        $pgScore = (is_array($record->answers_log) && isset($record->answers_log['pg_score'])) ? $record->answers_log['pg_score'] : 0;
+                        $pgScore = $record->score_pg ?? 0;
+                        $essayScore = $data['essay_score'];
+                        
+                        $pgWeight = $record->exam->pg_weight ?? 70;
+                        $essayWeight = $record->exam->essay_weight ?? 30;
+                        
+                        $weightedPG = ($pgScore * $pgWeight) / 100;
+                        $weightedEssay = ($essayScore * $essayWeight) / 100;
+                        
+                        $finalScore = $weightedPG + $weightedEssay;
 
                         $record->update([
-                            'score' => $pgScore + $data['essay_score'],
+                            'score_essay' => $essayScore,
+                            'score' => $finalScore,
                             'teacher_notes' => $data['teacher_notes'],
                         ]);
                     })
@@ -229,10 +229,13 @@ class ExamResultsTable
                         ->color('danger')
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
                             $records->load(['user.classroom', 'exam']);
+                            
+                            $school = auth()->user()->school ?? null;
 
                             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.exam-results-pdf', [
                                 'records' => $records,
                                 'date' => now()->format('d M Y H:i'),
+                                'school' => $school,
                             ])->setPaper('a4', 'landscape');
 
                             return response()->streamDownload(fn () => print($pdf->output()), 'rekap-hasil-ujian.pdf');

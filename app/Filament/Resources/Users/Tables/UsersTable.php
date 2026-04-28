@@ -37,7 +37,12 @@ class UsersTable
                     }),
                 TextColumn::make('classroom.name')
                     ->label('Kelas')
+                    ->searchable(),
+                TextColumn::make('school.name')
+                    ->label('Sekolah')
                     ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: fn () => auth()->user()->role === 'admin')
             ])
             ->filters([
                 //

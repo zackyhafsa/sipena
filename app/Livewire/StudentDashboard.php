@@ -23,8 +23,12 @@ class StudentDashboard extends Component
         $this->inputToken = '';
         $this->resetErrorBag('inputToken');
 
+        $schoolId = auth()->user()->school_id;
+        $pivot = $exam->schools()->where('school_id', $schoolId)->first()?->pivot;
+        $token = $pivot ? $pivot->token : null;
+
         // Jika ujian tidak memiliki token, langsung redirect
-        if (empty($exam->token)) {
+        if (empty($token)) {
             session()->put("exam_token_verified_{$examId}", true);
             return redirect()->to(route('student.exam', $examId));
         }
@@ -35,8 +39,11 @@ class StudentDashboard extends Component
     public function verifyToken()
     {
         $exam = Exam::findOrFail($this->selectedExamId);
+        $schoolId = auth()->user()->school_id;
+        $pivot = $exam->schools()->where('school_id', $schoolId)->first()?->pivot;
+        $token = $pivot ? $pivot->token : null;
 
-        if ($this->inputToken === $exam->token) {
+        if ($this->inputToken === $token) {
             $this->showTokenModal = false;
             session()->put("exam_token_verified_{$exam->id}", true);
             return redirect()->to(route('student.exam', $exam->id));
@@ -57,9 +64,12 @@ class StudentDashboard extends Component
     public function render()
     {
         $user = auth()->user();
+        $schoolId = $user->school_id;
 
-        // Get all active exams
-        $exams = Exam::where('is_active', true)->get();
+        // Get all active exams for the student's school
+        $exams = Exam::whereHas('schools', function ($query) use ($schoolId) {
+            $query->where('school_id', $schoolId)->where('exam_school.is_active', true);
+        })->get();
 
         // Map exam results to easily check if student has completed an exam
         $completedExams = ExamResult::where('user_id', $user->id)

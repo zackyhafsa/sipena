@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
@@ -25,6 +26,19 @@ class UserResource extends Resource
     protected static ?string $modelLabel = 'Pengguna';
 
     protected static ?string $pluralModelLabel = 'Daftar Pengguna';
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $schoolId = \App\Helpers\SchoolContext::getActiveSchoolId();
+
+        if ($schoolId) {
+            $query->where('school_id', $schoolId)
+                  ->where('role', '!=', 'superadmin');
+        }
+
+        return $query;
+    }
 
     public static function form(Schema $schema): Schema
     {

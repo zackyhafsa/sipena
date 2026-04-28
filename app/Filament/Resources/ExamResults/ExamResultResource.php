@@ -30,11 +30,11 @@ class ExamResultResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
+        $schoolId = \App\Helpers\SchoolContext::getActiveSchoolId();
 
-        if (auth()->check() && auth()->user()->role === 'admin') {
-            // Guru admin hanya melihat hasil ujian siswa dari kelasnya
-            $query->whereHas('user', function (Builder $q) {
-                $q->where('classroom_id', auth()->user()->classroom_id);
+        if ($schoolId) {
+            $query->whereHas('user', function (Builder $q) use ($schoolId) {
+                $q->where('school_id', $schoolId);
             });
         }
 

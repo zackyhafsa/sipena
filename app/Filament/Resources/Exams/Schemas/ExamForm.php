@@ -31,21 +31,6 @@ class ExamForm
                         Textarea::make('description')
                             ->label('Deskripsi/Instruksi Ujian')
                             ->columnSpanFull(),
-                        Toggle::make('is_active')
-                            ->label('Status Aktif')
-                            ->helperText('Nyalakan jika ujian sudah bisa diakses siswa')
-                            ->default(false),
-                        TextInput::make('token')
-                            ->label('Token Ujian')
-                            ->helperText('Token yang harus dimasukkan siswa sebelum mengerjakan ujian. Kosongkan jika tidak diperlukan.')
-                            ->maxLength(20)
-                            ->suffixAction(
-                                Action::make('generateToken')
-                                    ->icon('heroicon-o-arrow-path')
-                                    ->action(function ($set) {
-                                        $set('token', Str::upper(Str::random(6)));
-                                    })
-                            ),
                         Toggle::make('randomize_questions')
                             ->label('Acak Urutan Soal')
                             ->helperText('Jika dinyalakan, setiap siswa akan mendapatkan urutan soal yang berbeda.')
@@ -56,6 +41,31 @@ class ExamForm
                             ->default(false),
                     ])
                     ->columns(2),
+                Section::make('Pengaturan Penilaian & Keamanan')
+                    ->schema([
+                        TextInput::make('pg_weight')
+                            ->label('Bobot Nilai PG (%)')
+                            ->numeric()
+                            ->default(70)
+                            ->required()
+                            ->minValue(0)
+                            ->maxValue(100),
+                        TextInput::make('essay_weight')
+                            ->label('Bobot Nilai Essai (%)')
+                            ->numeric()
+                            ->default(30)
+                            ->required()
+                            ->minValue(0)
+                            ->maxValue(100),
+                        TextInput::make('max_violations')
+                            ->label('Batas Toleransi Pelanggaran (Keluar Layar Penuh)')
+                            ->numeric()
+                            ->default(3)
+                            ->required()
+                            ->minValue(0)
+                            ->helperText('Siswa akan otomatis di-submit jika keluar dari layar penuh melebihi batas ini. Isi 0 jika tidak ada batas.'),
+                    ])
+                    ->columns(3),
             ]);
     }
 }

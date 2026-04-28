@@ -24,17 +24,17 @@ class StudentResource extends Resource
     protected static ?string $slug = 'students';
     protected static ?string $modelLabel = 'Data Siswa';
     protected static ?string $pluralModelLabel = 'Data Siswa';
-    protected static string|NITENUM|NULL $NAVIGATIONGROUP = 'Manajemen Sekolah';
+    protected static string|\UnitEnum|null $navigationGroup = 'Manajemen Sekolah';
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
     // Limit scope to only 'student' role
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery()->where('role', 'student');
-        
-        $user = auth()->user();
-        if ($user->role === 'admin' && $user->school_id) {
-            $query->where('school_id', $user->school_id);
+        $schoolId = \App\Helpers\SchoolContext::getActiveSchoolId();
+
+        if ($schoolId) {
+            $query->where('school_id', $schoolId);
         }
 
         return $query;

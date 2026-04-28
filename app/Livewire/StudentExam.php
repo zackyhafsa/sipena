@@ -22,7 +22,7 @@ class StudentExam extends Component
 
     public $violationCount = 0;
 
-    public $maxViolations = 3;
+    public $maxViolations = 0;
 
     public $started_at;
 
@@ -33,9 +33,14 @@ class StudentExam extends Component
     {
         $this->exam_id = $exam_id;
         $this->exam = Exam::with('questions')->findOrFail($exam_id);
+        $this->maxViolations = $this->exam->max_violations;
 
         // Verifikasi token via session (diset dari dashboard)
-        if (! empty($this->exam->token) && ! session("exam_token_verified_{$exam_id}")) {
+        $schoolId = auth()->user()->school_id;
+        $pivot = $this->exam->schools()->where('school_id', $schoolId)->first()?->pivot;
+        $token = $pivot ? $pivot->token : null;
+
+        if (! empty($token) && ! session("exam_token_verified_{$exam_id}")) {
             session()->flash('error', 'Anda harus memasukkan token terlebih dahulu.');
             $this->redirect(route('student.dashboard'));
 
@@ -97,12 +102,17 @@ class StudentExam extends Component
 
     public function registerViolation()
     {
+        // Jika max_violations = 0, berarti tidak ada batas pelanggaran (fleksibel)
+        if ($this->exam->max_violations == 0) {
+            return;
+        }
+
         $this->violationCount++;
 
-        if ($this->violationCount >= $this->maxViolations) {
+        if ($this->violationCount >= $this->exam->max_violations) {
             $this->dispatch('show-fatal-warning');
         } else {
-            $this->dispatch('show-violation-warning', count: $this->violationCount, max: $this->maxViolations);
+            $this->dispatch('show-violation-warning', count: $this->violationCount, max: $this->exam->max_violations);
         }
     }
 
@@ -158,6 +168,9 @@ class StudentExam extends Component
         }
 
         $finalScorePG = $totalWeightPG > 0 ? round(($earnedScorePG / $totalWeightPG) * 100, 2) : 0;
+        
+        $pgWeight = $this->exam->pg_weight ?? 70;
+        $weightedPGScore = ($finalScorePG * $pgWeight) / 100;
 
         // Simpan log lengkap jawaban (termasuk esai) dan nilai PG sementara
         $answersLog = [
@@ -169,7 +182,9 @@ class StudentExam extends Component
             'user_id' => auth()->id(),
             'exam_id' => $this->exam_id,
             'answers_log' => $answersLog,
-            'score' => $hasEssay ? null : $finalScorePG,
+            'score_pg' => $finalScorePG,
+            'score_essay' => $hasEssay ? null : 0,
+            'score' => $hasEssay ? null : $weightedPGScore,
             'cheat_warning_count' => $this->violationCount,
             'started_at' => $this->started_at,
             'finished_at' => now(),
