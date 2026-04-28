@@ -74,7 +74,19 @@ class StudentExam extends Component
             // Tambahkan soal baru jika ada yang baru dimasukkan guru
             $newQuestions = $this->exam->questions->filter(fn($q) => !in_array($q->id, $orderedIds))->values();
             if ($newQuestions->isNotEmpty()) {
-                $this->questions = $this->questions->merge($newQuestions);
+                
+                if ($this->exam->randomize_questions) {
+                    $newPg = $newQuestions->where('type', '!=', 'essay')->shuffle();
+                    $newEssay = $newQuestions->where('type', 'essay')->shuffle();
+                } else {
+                    $newPg = $newQuestions->where('type', '!=', 'essay');
+                    $newEssay = $newQuestions->where('type', 'essay');
+                }
+                
+                $oldPg = $this->questions->where('type', '!=', 'essay');
+                $oldEssay = $this->questions->where('type', 'essay');
+                
+                $this->questions = $oldPg->merge($newPg)->merge($oldEssay)->merge($newEssay)->values();
                 
                 foreach ($newQuestions as $question) {
                     if (!array_key_exists($question->id, $this->answers)) {
