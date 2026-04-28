@@ -219,7 +219,7 @@ class ExamResultsTable
                     })
                     ->modalWidth('4xl')
                     ->modalHeading(fn ($record) => 'Lembar Jawaban: '.$record->user->name),
-                \Filament\Tables\Actions\EditAction::make(),
+                \Filament\Actions\EditAction::make(),
                 DeleteAction::make(),
             ])
             ->bulkActions([
