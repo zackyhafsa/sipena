@@ -24,7 +24,22 @@ class ExamResultResource extends Resource
 
     public static function canCreate(): bool
     {
-        return false;
+        return true;
+    }
+    
+    public static function canEdit($record): bool
+    {
+        return true;
+    }
+    
+    public static function canDelete($record): bool
+    {
+        return true;
+    }
+    
+    public static function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    {
+        return Schemas\ExamResultForm::configure($schema);
     }
     
     public static function getEloquentQuery(): Builder
@@ -55,6 +70,8 @@ class ExamResultResource extends Resource
     {
         return [
             'index' => ListExamResults::route('/'),
+            'create' => Pages\CreateExamResult::route('/create'),
+            'edit' => Pages\EditExamResult::route('/{record}/edit'),
         ];
     }
 }

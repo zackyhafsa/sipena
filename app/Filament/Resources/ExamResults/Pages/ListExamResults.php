@@ -12,6 +12,7 @@ class ListExamResults extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\CreateAction::make(),
             \Filament\Actions\Action::make('export_pdf')
                 ->label('Cetak Rekap (PDF)')
                 ->icon('heroicon-o-document-arrow-down')
