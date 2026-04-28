@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Schools;
 use App\Filament\Resources\Schools\Pages\ManageSchools;
 use App\Models\School;
 use BackedEnum;
+use UnitEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -36,6 +37,8 @@ class SchoolResource extends Resource
     }
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Sekolah';
 
     protected static ?string $navigationLabel = 'Data Sekolah';
 

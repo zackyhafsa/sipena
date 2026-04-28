@@ -6,6 +6,7 @@ use App\Filament\Resources\ExamResults\Pages\ListExamResults;
 use App\Filament\Resources\ExamResults\Tables\ExamResultsTable;
 use App\Models\ExamResult;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
@@ -16,6 +17,7 @@ class ExamResultResource extends Resource
     protected static ?string $model = ExamResult::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Ujian';
     protected static ?string $navigationLabel = 'Hasil Ujian';
 
     protected static ?string $modelLabel = 'Hasil Ujian';

@@ -9,6 +9,7 @@ use App\Filament\Resources\Questions\Schemas\QuestionForm;
 use App\Filament\Resources\Questions\Tables\QuestionsTable;
 use App\Models\Question;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -21,6 +22,8 @@ class QuestionResource extends Resource
 
     // Menggunakan icon document-check untuk soal
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCheck;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Ujian';
 
     protected static ?string $navigationLabel = 'Bank Soal';
 
