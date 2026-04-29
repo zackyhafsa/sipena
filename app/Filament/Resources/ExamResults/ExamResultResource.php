@@ -4,20 +4,23 @@ namespace App\Filament\Resources\ExamResults;
 
 use App\Filament\Resources\ExamResults\Pages\ListExamResults;
 use App\Filament\Resources\ExamResults\Tables\ExamResultsTable;
+use App\Helpers\SchoolContext;
 use App\Models\ExamResult;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
-use Filament\Support\Icons\Heroicon;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class ExamResultResource extends Resource
 {
     protected static ?string $model = ExamResult::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+
     protected static string|UnitEnum|null $navigationGroup = 'Manajemen Ujian';
+
     protected static ?string $navigationLabel = 'Hasil Ujian';
 
     protected static ?string $modelLabel = 'Hasil Ujian';
@@ -28,26 +31,26 @@ class ExamResultResource extends Resource
     {
         return true;
     }
-    
+
     public static function canEdit($record): bool
     {
         return true;
     }
-    
+
     public static function canDelete($record): bool
     {
         return true;
     }
-    
-    public static function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+
+    public static function form(Schema $schema): Schema
     {
         return Schemas\ExamResultForm::configure($schema);
     }
-    
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
-        $schoolId = \App\Helpers\SchoolContext::getActiveSchoolId();
+        $schoolId = SchoolContext::getActiveSchoolId();
 
         if ($schoolId) {
             $query->whereHas('user', function (Builder $q) use ($schoolId) {
