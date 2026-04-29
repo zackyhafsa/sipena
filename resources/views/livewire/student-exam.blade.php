@@ -49,7 +49,7 @@
 
 
     <!-- Pengaturan Header / Top Bar -->
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 lg:sticky lg:top-4 z-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 lg:top-4 z-10">
         <div
             class="bg-white/90 backdrop-blur-lg p-5 lg:p-6 rounded-2xl shadow-sm border border-gray-200/60 lg:flex lg:justify-between lg:items-center gap-4">
             <div>
@@ -107,7 +107,8 @@
 
                         @if ($question->image_path)
                             <div class="mt-4 mb-6">
-                                <img src="{{ asset('storage/' . $question->image_path) }}" alt="Gambar Soal" class="max-w-full max-h-96 h-auto rounded-lg shadow-sm border border-gray-200">
+                                <img src="{{ asset('storage/' . $question->image_path) }}" alt="Gambar Soal"
+                                    class="max-w-full max-h-96 h-auto rounded-lg shadow-sm border border-gray-200">
                             </div>
                         @endif
 
@@ -135,9 +136,8 @@
                                     @if ($question->$optionField || $question->$imageField)
                                         <label class="flex items-start cursor-pointer group relative">
                                             <input type="radio" wire:model.live="answers.{{ $question->id }}"
-                                                name="question_{{ $question->id }}"
-                                                value="{{ strtoupper(substr($optionField, -1)) }}" required
-                                                class="peer sr-only option-radio">
+                                                name="question_{{ $question->id }}" value="{{ strtoupper(substr($optionField, -1)) }}"
+                                                required class="peer sr-only option-radio">
 
                                             <div
                                                 class="w-full flex items-start p-4 md:p-5 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/50 peer-checked:bg-indigo-50 peer-checked:border-indigo-500 transition-all duration-200">
@@ -154,7 +154,8 @@
                                                 </div>
                                                 <div class="flex flex-col w-full">
                                                     <div class="flex items-start w-full">
-                                                        <span class="inline-block w-6 font-bold text-gray-400 mt-1">{{ $displayLetters[$currentOptIdx++] }}.</span>
+                                                        <span
+                                                            class="inline-block w-6 font-bold text-gray-400 mt-1">{{ $displayLetters[$currentOptIdx++] }}.</span>
                                                         <div class="flex flex-col gap-3 w-full">
                                                             @if ($question->$imageField)
                                                                 <img src="{{ asset('storage/' . $question->$imageField) }}"
@@ -180,8 +181,9 @@
                 @endforeach
 
                 <!-- Navigasi Bawah antar soal -->
-                <div class="mt-6 flex flex-col sm:flex-row items-center justify-between bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 gap-4 sm:gap-0">
-                    
+                <div
+                    class="mt-6 flex flex-col sm:flex-row items-center justify-between bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 gap-4 sm:gap-0">
+
                     <!-- Indikator Soal (Pindah ke atas pada mobile) -->
                     <div class="text-sm font-medium text-gray-500 sm:order-2"
                         x-text="`Soal ${currentTab + 1} dari {{ count($questions) }}`"></div>
@@ -194,7 +196,8 @@
                                 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400 shadow-sm'"
                             class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-3.5 border font-bold rounded-xl transition-all text-sm sm:text-base">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7">
                                 </path>
                             </svg>
                             <span class="hidden sm:inline">Soal Sebelumnya</span>
@@ -208,7 +211,8 @@
                                 <span class="hidden sm:inline">Soal Selanjutnya</span>
                                 <span class="sm:hidden">Selanjutnya</span>
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7">
                                     </path>
                                 </svg>
                             </button>
@@ -219,7 +223,8 @@
                                 class="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all text-sm sm:text-base">
                                 Selesai
                                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7">
                                     </path>
                                 </svg>
                             </button>
@@ -234,8 +239,7 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 sticky top-30">
                     <div class="flex items-center gap-2 mb-6">
                         <div class="p-2 bg-indigo-50 rounded-lg">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
                                 </path>
@@ -247,20 +251,18 @@
                     <div class="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 mb-8">
                         @foreach ($questions as $index => $question)
                             <button type="button"
-                                @click="currentTab = {{ $index }}; window.scrollTo({top: 0, behavior: 'smooth'})"
-                                :class="{
-                                    'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
-                                        {{ $index }},
-                                    'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
-                                        {{ $question->id }}],
-                                    'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
-                                        !$wire.answers[{{ $question->id }}]
-                                }"
+                                @click="currentTab = {{ $index }}; window.scrollTo({top: 0, behavior: 'smooth'})" :class="{
+                                        'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
+                                            {{ $index }},
+                                        'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
+                                            {{ $question->id }}],
+                                        'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
+                                            !$wire.answers[{{ $question->id }}]
+                                    }"
                                 class="w-full aspect-square flex flex-col items-center justify-center rounded-xl border text-sm transition-all transform origin-center relative {{ $question->type === 'essay' ? 'border-b-[3px] border-b-amber-500' : '' }}">
                                 {{ $index + 1 }}
                                 <!-- Indikator hijau kecil untuk soal yang sudah dijawab jika sedang tidak fokus -->
-                                <span
-                                    x-show="$wire.answers[{{ $question->id }}] && currentTab !== {{ $index }}"
+                                <span x-show="$wire.answers[{{ $question->id }}] && currentTab !== {{ $index }}"
                                     class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white"></span>
                             </button>
                         @endforeach
@@ -275,7 +277,8 @@
                             Dijawab
                         </div>
                         <div class="flex items-center gap-3 text-sm text-gray-600 mb-4">
-                            <span class="w-5 h-3 rounded-sm border-b-[3px] border-b-amber-500 bg-gray-100"></span> Soal Essai
+                            <span class="w-5 h-3 rounded-sm border-b-[3px] border-b-amber-500 bg-gray-100"></span> Soal
+                            Essai
                         </div>
 
                         <button type="button" @click="$dispatch('open-confirm-modal')"
@@ -290,8 +293,8 @@
                         <!-- Modal Konfirmasi Selesai Ujian -->
                         <template x-teleport="body">
                             <div x-show="showConfirmModal" style="display: none;"
-                                class="fixed inset-0 z-150 overflow-y-auto" aria-labelledby="modal-title"
-                                role="dialog" aria-modal="true">
+                                class="fixed inset-0 z-150 overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+                                aria-modal="true">
                                 <div
                                     class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                                     <div x-show="showConfirmModal" x-transition.opacity
@@ -311,8 +314,8 @@
                                         <div class="sm:flex sm:items-start">
                                             <div
                                                 class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 sm:mx-0 sm:h-12 sm:w-12 border border-emerald-200">
-                                                <svg class="h-6 w-6 text-emerald-600" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg class="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2" d="M5 13l4 4L19 7" />
                                                 </svg>
@@ -332,8 +335,7 @@
                                             </div>
                                         </div>
                                         <div class="mt-6 sm:mt-6 sm:flex sm:flex-row-reverse gap-3">
-                                            <button type="button" wire:click="submit"
-                                                @click="showConfirmModal = false"
+                                            <button type="button" wire:click="submit" @click="showConfirmModal = false"
                                                 class="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-sm px-4 py-3 bg-indigo-600 text-base font-bold text-white hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 sm:w-auto sm:text-sm transition-all">
                                                 Ya, Kumpulkan Ujian
                                             </button>
@@ -375,8 +377,7 @@
                     <div class="flex flex-col items-center text-center">
                         <div
                             class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-5 border-4 border-white shadow-sm -mt-12 relative z-10">
-                            <svg class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
+                            <svg class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
@@ -392,10 +393,11 @@
 
                             <div class="bg-red-50 rounded-xl p-4 border border-red-100 mb-4 inline-block w-full">
                                 <p class="text-sm font-bold text-red-800">
-                                    Teguran ke: <span class="text-xl" x-text="$wire.violationCount"></span> 
+                                    Teguran ke: <span class="text-xl" x-text="$wire.violationCount"></span>
                                     <template x-if="$wire.maxViolations > 0">
                                         <span>
-                                            <span class="text-red-400 font-medium">dari</span> <span x-text="$wire.maxViolations"></span>
+                                            <span class="text-red-400 font-medium">dari</span> <span
+                                                x-text="$wire.maxViolations"></span>
                                         </span>
                                     </template>
                                 </p>
@@ -421,80 +423,80 @@
 
     <!-- Security Check Script -->
     @script
-        <script>
-            Alpine.data('examSecurity', () => ({
-                currentTab: 0,
-                isFullscreen: false,
-                showWarning: false,
-                isProcessingViolation: false,
-                timeSinceLoad: Date.now(),
+    <script>
+        Alpine.data('examSecurity', () => ({
+            currentTab: 0,
+            isFullscreen: false,
+            showWarning: false,
+            isProcessingViolation: false,
+            timeSinceLoad: Date.now(),
 
-                init() {
+            init() {
+                this.isFullscreen = !!document.fullscreenElement;
+
+                document.addEventListener('fullscreenchange', () => {
                     this.isFullscreen = !!document.fullscreenElement;
+                    if (!this.isFullscreen && !this.showWarning) {
+                        this.handleViolation();
+                    }
+                });
 
-                    document.addEventListener('fullscreenchange', () => {
-                        this.isFullscreen = !!document.fullscreenElement;
-                        if (!this.isFullscreen && !this.showWarning) {
-                            this.handleViolation();
-                        }
-                    });
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden && !this.showWarning) {
+                        this.handleViolation();
+                    }
+                });
 
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.hidden && !this.showWarning) {
-                            this.handleViolation();
-                        }
-                    });
+                window.addEventListener('blur', () => {
+                    if (!this.showWarning) {
+                        this.handleViolation();
+                    }
+                });
 
-                    window.addEventListener('blur', () => {
-                        if (!this.showWarning) {
-                            this.handleViolation();
-                        }
-                    });
+                $wire.on('show-violation-warning', () => {
+                    this.showWarning = true;
+                });
 
-                    $wire.on('show-violation-warning', () => {
-                        this.showWarning = true;
-                    });
+                $wire.on('show-fatal-warning', () => {
+                    $wire.forceSubmit();
+                });
 
-                    $wire.on('show-fatal-warning', () => {
-                        $wire.forceSubmit();
-                    });
-
-                    // Keyboard shortcut navigation (Left/Right arrows)
-                    window.addEventListener('keydown', (e) => {
-                        if (e.key === 'ArrowRight' && this.currentTab < {{ count($questions) - 1 }}) {
-                            this.currentTab++;
-                            window.scrollTo({
-                                top: 0,
-                                behavior: 'smooth'
-                            });
-                        }
-                        if (e.key === 'ArrowLeft' && this.currentTab > 0) {
-                            this.currentTab--;
-                            window.scrollTo({
-                                top: 0,
-                                behavior: 'smooth'
-                            });
-                        }
-                    });
-                },
-
-                enterFullscreen() {
-                    let elem = document.documentElement;
-                    if (elem.requestFullscreen) {
-                        elem.requestFullscreen().then(() => {
-                            this.isFullscreen = true;
-                        }).catch(err => {
-                            console.error("Fullscreen error", err);
+                // Keyboard shortcut navigation (Left/Right arrows)
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' && this.currentTab < {{ count($questions) - 1 }}) {
+                        this.currentTab++;
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
                         });
                     }
-                },
+                    if (e.key === 'ArrowLeft' && this.currentTab > 0) {
+                        this.currentTab--;
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            },
 
-                async handleViolation() {
-                    if (this.isProcessingViolation || Date.now() - this.timeSinceLoad < 2000) return;
-                    this.isProcessingViolation = true;
-                    await $wire.registerViolation();
+            enterFullscreen() {
+                let elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().then(() => {
+                        this.isFullscreen = true;
+                    }).catch(err => {
+                        console.error("Fullscreen error", err);
+                    });
                 }
-            }));
-        </script>
+            },
+
+            async handleViolation() {
+                if (this.isProcessingViolation || Date.now() - this.timeSinceLoad < 2000) return;
+                this.isProcessingViolation = true;
+                await $wire.registerViolation();
+            }
+        }));
+    </script>
     @endscript
 </div>
