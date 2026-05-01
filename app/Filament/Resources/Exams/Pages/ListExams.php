@@ -12,6 +12,10 @@ class ListExams extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        if (auth()->user()?->role !== 'superadmin') {
+            return [];
+        }
+
         return [
             CreateAction::make(),
         ];

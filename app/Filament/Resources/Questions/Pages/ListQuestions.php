@@ -19,6 +19,10 @@ class ListQuestions extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        if (auth()->user()?->role !== 'superadmin') {
+            return [];
+        }
+
         return [
             Action::make('downloadTemplate')
                 ->label('Download Template Soal')
@@ -39,7 +43,7 @@ class ListQuestions extends ListRecords
                         ->required(),
                     FileUpload::make('file')
                         ->label('Upload File Excel')
-                        ->disk('local') // Menyimpan sementara di folder storage/app
+                        ->disk('local')
                         ->directory('imports')
                         ->acceptedFileTypes([
                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -48,21 +52,17 @@ class ListQuestions extends ListRecords
                         ->required(),
                 ])
                 ->action(function (array $data) {
-                    // Mengambil path file yang baru diupload
                     $filePath = storage_path('app/private/'.$data['file']);
-                    // Jika path private error, ganti menjadi: storage_path('app/' . $data['file']);
 
-                    // Menjalankan proses import
                     Excel::import(new QuestionsImport($data['exam_id']), $filePath);
 
-                    // Menampilkan notifikasi sukses
                     Notification::make()
                         ->title('Soal berhasil di-import!')
                         ->success()
                         ->send();
                 }),
 
-            CreateAction::make(), // Tombol "New Soal" bawaan
+            CreateAction::make(),
         ];
     }
 }

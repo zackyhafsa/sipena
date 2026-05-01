@@ -31,6 +31,7 @@ class UserPolicy
 
     public function delete(User $user, User $model): bool
     {
+        if ($model->role === 'superadmin') return false; // Mencegah penghapusan superadmin
         if ($user->role === 'superadmin') return true;
         return $user->role === 'admin' && $model->role === 'student' && $user->school_id === $model->school_id;
     }
@@ -42,6 +43,7 @@ class UserPolicy
 
     public function forceDelete(User $user, User $model): bool
     {
+        if ($model->role === 'superadmin') return false; // Mencegah penghapusan superadmin
         return $user->role === 'superadmin';
     }
 }

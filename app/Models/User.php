@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
-#[Fillable(['name', 'email', 'password', 'role', 'classroom_id', 'school_id'])]
+#[Fillable(['name', 'email', 'nis', 'nisn', 'password', 'role', 'classroom_id', 'school_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -40,6 +40,15 @@ class User extends Authenticatable implements FilamentUser
     public function school()
     {
         return $this->belongsTo(School::class);
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            if ($user->role === 'superadmin') {
+                return false; // Mencegah superadmin dihapus (bahkan dari sistem)
+            }
+        });
     }
 
     public function canAccessPanel(Panel $panel): bool

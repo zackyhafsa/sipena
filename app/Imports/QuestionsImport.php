@@ -18,19 +18,30 @@ class QuestionsImport implements ToModel, WithHeadingRow
 
     public function model(array $row)
     {
-        // Pastikan nama kolom di Excel persis seperti yang di dalam kurung siku ['...']
+        // Mendukung format bahasa indonesia dan format lama (inggris)
+        $jenisSoal = strtolower($row['jenis_soal'] ?? $row['type'] ?? 'pilihan_ganda');
+        $tipe = match ($jenisSoal) {
+            'esai', 'essay', 'essay_question' => 'essay',
+            default => 'multiple_choice',
+        };
+
+        $teksSoal = $row['teks_soal'] ?? $row['question_text'] ?? null;
+        if (empty($teksSoal)) return null; // skip jika soal kosong
+
+        $jawabanPilgan = $row['jawaban_benar_pilgan'] ?? $row['correct_answer'] ?? null;
+
         return new Question([
             'exam_id' => $this->exam_id,
-            'type' => $row['type'] ?? 'multiple_choice',
-            'question_text' => $row['question_text'],
-            'option_a' => $row['option_a'] ?? null,
-            'option_b' => $row['option_b'] ?? null,
-            'option_c' => $row['option_c'] ?? null,
-            'option_d' => $row['option_d'] ?? null,
-            'option_e' => $row['option_e'] ?? null,
-            'correct_answer' => !empty($row['correct_answer']) ? strtoupper($row['correct_answer']) : null,
-            'correct_answer_essay' => $row['correct_answer_essay'] ?? null,
-            'score_weight' => $row['score_weight'] ?? 1,
+            'type' => $tipe,
+            'question_text' => $teksSoal,
+            'option_a' => $row['opsi_a'] ?? $row['option_a'] ?? null,
+            'option_b' => $row['opsi_b'] ?? $row['option_b'] ?? null,
+            'option_c' => $row['opsi_c'] ?? $row['option_c'] ?? null,
+            'option_d' => $row['opsi_d'] ?? $row['option_d'] ?? null,
+            'option_e' => $row['opsi_e'] ?? $row['option_e'] ?? null,
+            'correct_answer' => !empty($jawabanPilgan) ? strtoupper(trim($jawabanPilgan)) : null,
+            'correct_answer_essay' => $row['jawaban_benar_esai'] ?? $row['correct_answer_essay'] ?? null,
+            'score_weight' => $row['bobot_nilai'] ?? $row['score_weight'] ?? 1,
         ]);
     }
 }

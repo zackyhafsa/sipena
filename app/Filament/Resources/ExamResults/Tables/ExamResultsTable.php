@@ -105,8 +105,8 @@ class ExamResultsTable
                             ->label('Informasi Nilai Otomatis')
                             ->content(new HtmlString("
                                 <div class='flex items-center gap-2'>
-                                    <span class='text-lg font-bold text-gray-800'>Skor Pilihan Ganda (Skala 100):</span>
-                                    <span class='px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold'>{$pgScore}</span>
+                                    <span class='text-lg font-bold text-gray-800 dark:text-gray-100'>Skor Pilihan Ganda (Skala 100):</span>
+                                    <span class='px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold dark:bg-blue-900/40 dark:text-blue-200'>{$pgScore}</span>
                                 </div>
                             "));
 
@@ -122,8 +122,8 @@ class ExamResultsTable
                                 $isCorrect = $userAnswer === $correctAnswer;
 
                                 $statusBadge = $isCorrect
-                                    ? "<span class='px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold'>Benar</span>"
-                                    : "<span class='px-2 py-1 rounded-md bg-red-100 text-red-700 text-xs font-bold'>Salah</span>";
+                                    ? "<span class='px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold dark:bg-green-900/40 dark:text-green-200'>Benar</span>"
+                                    : "<span class='px-2 py-1 rounded-md bg-red-100 text-red-700 text-xs font-bold dark:bg-red-900/40 dark:text-red-200'>Salah</span>";
 
                                 $imageHtml = '';
                                 if ($question->image_path) {
@@ -132,19 +132,19 @@ class ExamResultsTable
                                 }
 
                                 $schemas[] = Placeholder::make("pg_{$question->id}")
-                                    ->label(new HtmlString("<span class='text-gray-700 font-semibold'>{$num}. Pilihan Ganda</span> {$statusBadge}"))
+                                    ->label(new HtmlString("<span class='text-gray-700 font-semibold dark:text-gray-200'>{$num}. Pilihan Ganda</span> {$statusBadge}"))
                                     ->content(new HtmlString("
-                                        <div class='mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200'>
-                                            <div class='mb-3 text-gray-800 font-medium'>{$question->question_text}</div>
+                                        <div class='mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900/60 dark:border-gray-700'>
+                                            <div class='mb-3 text-gray-800 font-medium dark:text-gray-100'>{$question->question_text}</div>
                                             {$imageHtml}
                                             <div class='grid grid-cols-2 gap-4'>
                                                 <div>
-                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Jawaban Siswa</span>
-                                                    <div class='mt-1 text-lg font-bold ".($isCorrect ? 'text-green-600' : 'text-red-600')."'>{$userAnswer}</div>
+                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider dark:text-gray-400'>Jawaban Siswa</span>
+                                                    <div class='mt-1 text-lg font-bold ".($isCorrect ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300')."'>{$userAnswer}</div>
                                                 </div>
                                                 <div>
-                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Kunci Jawaban</span>
-                                                    <div class='mt-1 text-lg font-bold text-gray-800'>{$correctAnswer}</div>
+                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider dark:text-gray-400'>Kunci Jawaban</span>
+                                                    <div class='mt-1 text-lg font-bold text-gray-800 dark:text-gray-100'>{$correctAnswer}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -159,19 +159,19 @@ class ExamResultsTable
                                 }
 
                                 $schemas[] = Placeholder::make("essay_{$question->id}")
-                                    ->label(new HtmlString("<span class='text-indigo-700 font-semibold'>{$num}. Esai</span>"))
+                                    ->label(new HtmlString("<span class='text-indigo-700 font-semibold dark:text-indigo-200'>{$num}. Esai</span>"))
                                     ->content(new HtmlString("
-                                        <div class='mt-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100'>
-                                            <div class='mb-3 text-gray-800 font-medium'>{$question->question_text}</div>
+                                        <div class='mt-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800/60'>
+                                            <div class='mb-3 text-gray-800 font-medium dark:text-gray-100'>{$question->question_text}</div>
                                             {$imageHtml}
                                             <div class='space-y-4'>
                                                 <div>
-                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Jawaban Siswa</span>
-                                                    <div class='mt-1 p-3 bg-white rounded-lg border border-gray-200 text-gray-800 whitespace-pre-wrap'>".($userAnswer === '-' ? '<em>Tidak dijawab</em>' : $userAnswer)."</div>
+                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider dark:text-gray-400'>Jawaban Siswa</span>
+                                                    <div class='mt-1 p-3 bg-white rounded-lg border border-gray-200 text-gray-800 whitespace-pre-wrap dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100'>".($userAnswer === '-' ? '<em>Tidak dijawab</em>' : $userAnswer)."</div>
                                                 </div>
                                                 <div>
-                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider'>Acuan Jawaban (Guru)</span>
-                                                    <div class='mt-1 p-3 bg-indigo-50 rounded-lg text-indigo-900 border border-indigo-100 whitespace-pre-wrap'>{$correctAnswerEssay}</div>
+                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider dark:text-gray-400'>Acuan Jawaban (Guru)</span>
+                                                    <div class='mt-1 p-3 bg-indigo-50 rounded-lg text-indigo-900 border border-indigo-100 whitespace-pre-wrap dark:bg-indigo-900/40 dark:text-indigo-100 dark:border-indigo-800/60'>{$correctAnswerEssay}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -230,8 +230,9 @@ class ExamResultsTable
                         ->color('danger')
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
                             $records->load(['user.classroom', 'exam']);
-                            
-                            $school = auth()->user()->school ?? null;
+
+                            $schoolId = \App\Helpers\SchoolContext::getActiveSchoolId();
+                            $school = $schoolId ? \App\Models\School::find($schoolId) : null;
 
                             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.exam-results-pdf', [
                                 'records' => $records,

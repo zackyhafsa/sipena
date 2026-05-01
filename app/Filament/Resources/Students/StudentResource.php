@@ -2,19 +2,25 @@
 
 namespace App\Filament\Resources\Students;
 
+use App\Exports\StudentTemplateExport;
 use App\Filament\Resources\Students\Pages\ManageStudents;
+use App\Helpers\SchoolContext;
 use App\Imports\StudentsImport;
 use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StudentResource extends Resource
@@ -22,16 +28,20 @@ class StudentResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $slug = 'students';
+
     protected static ?string $modelLabel = 'Data Siswa';
+
     protected static ?string $pluralModelLabel = 'Data Siswa';
+
     protected static string|\UnitEnum|null $navigationGroup = 'Manajemen Sekolah';
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
     // Limit scope to only 'student' role
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery()->where('role', 'student');
-        $schoolId = \App\Helpers\SchoolContext::getActiveSchoolId();
+        $schoolId = SchoolContext::getActiveSchoolId();
 
         if ($schoolId) {
             $query->where('school_id', $schoolId);
@@ -44,6 +54,18 @@ class StudentResource extends Resource
     {
         return $schema
             ->components([
+                TextInput::make('nis')
+                    ->label('NIS')
+                    ->unique(ignoreRecord: true)
+                    ->numeric()
+                    ->required()
+                    ->maxLength(50),
+                TextInput::make('nisn')
+                    ->label('NISN')
+                    ->unique(ignoreRecord: true)
+                    ->numeric()
+                    ->required()
+                    ->maxLength(50),
                 TextInput::make('name')
                     ->label('Nama Siswa')
                     ->required()
@@ -54,6 +76,7 @@ class StudentResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
+
                 TextInput::make('password')
                     ->password()
                     ->label('Password (Abaikan jika tidak ingin diubah)')
@@ -80,6 +103,8 @@ class StudentResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->label('Nama')->searchable()->sortable(),
+                TextColumn::make('nis')->label('NIS')->searchable()->toggleable(),
+                TextColumn::make('nisn')->label('NISN')->searchable()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('email')->label('Email')->searchable(),
                 TextColumn::make('classroom.name')
                     ->label('Kelas')
@@ -95,8 +120,8 @@ class StudentResource extends Resource
                 //
             ])
             ->actions([
-                \Filament\Actions\EditAction::make(),
-                \Filament\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->headerActions([
                 Action::make('download_template')
@@ -104,21 +129,7 @@ class StudentResource extends Resource
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->action(function () {
-                        // Generate dynamic CSV for template (name, email, password, id_kelas)
-                        $headers = ['nama_siswa', 'email', 'password', 'id_kelas'];
-                        $callback = function() use ($headers) {
-                            $file = fopen('php://output', 'w');
-                            fputcsv($file, $headers);
-                            fputcsv($file, ['Siswa Dummy 1', 'siswa1@sekolah.com', '12345678', '1']);
-                            fclose($file);
-                        };
-                        return response()->stream($callback, 200, [
-                            "Content-type"        => "text/csv",
-                            "Content-Disposition" => "attachment; filename=template_import_siswa.csv",
-                            "Pragma"              => "no-cache",
-                            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-                            "Expires"             => "0"
-                        ]);
+                        return Excel::download(new StudentTemplateExport, 'template-import-siswa.xlsx');
                     }),
                 Action::make('import_excel')
                     ->label('Import Excel')
@@ -127,17 +138,17 @@ class StudentResource extends Resource
                     ->form([
                         FileUpload::make('file')
                             ->label('File Excel/CSV')
-                            ->required()
+                            ->required(),
                     ])
                     ->action(function (array $data) {
-                        $file = \Illuminate\Support\Facades\Storage::path($data['file']);
+                        $file = Storage::path($data['file']);
                         $school_id = auth()->user()->school_id;
                         Excel::import(new StudentsImport($school_id), $file);
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Data siswa berhasil diimport.')
                             ->success()
                             ->send();
-                    })
+                    }),
             ]);
     }
 

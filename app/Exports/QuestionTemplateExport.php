@@ -13,16 +13,16 @@ class QuestionTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
     public function headings(): array
     {
         return [
-            'type',
-            'question_text',
-            'option_a',
-            'option_b',
-            'option_c',
-            'option_d',
-            'option_e',
-            'correct_answer',
-            'correct_answer_essay',
-            'score_weight',
+            'jenis_soal',
+            'teks_soal',
+            'opsi_a',
+            'opsi_b',
+            'opsi_c',
+            'opsi_d',
+            'opsi_e',
+            'jawaban_benar_pilgan',
+            'jawaban_benar_esai',
+            'bobot_nilai',
         ];
     }
 
@@ -30,19 +30,19 @@ class QuestionTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
     {
         return [
             [
-                'multiple_choice',
+                'pilihan_ganda',
                 'Berapakah hasil dari 2 + 2?',
                 '3',
                 '4',
                 '5',
                 '6',
                 '',
-                'B',
+                'B', // Isi dengan A/B/C/D/E
                 '',
                 '1',
             ],
             [
-                'multiple_choice',
+                'pilihan_ganda',
                 'Siapakah nabi terakhir dalam Islam?',
                 'Nabi Isa AS',
                 'Nabi Muhammad SAW',
@@ -54,7 +54,7 @@ class QuestionTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
                 '1',
             ],
             [
-                'essay',
+                'esai',
                 'Jelaskan pengertian sholat menurut bahasa dan istilah!',
                 '',
                 '',

@@ -19,24 +19,38 @@ class StudentsImport implements ToModel, WithHeadingRow
 
     public function model(array $row)
     {
-        if (!isset($row['nama_siswa']) || !isset($row['email'])) {
+        // Mendukung kedua header ("email" atau "email_atau_username")
+        $email = $row['email_atau_username'] ?? $row['email'] ?? null;
+        
+        if (!isset($row['nama_siswa']) || !$email) {
             return null; // Skip if missing essential data
         }
 
-        // Resolve Classroom by ID or Name
+        // Cari atau buat Kelas berdasarkan namanya
         $classroom_id = null;
-        if (isset($row['id_kelas']) && !empty($row['id_kelas'])) {
+        if (isset($row['nama_kelas']) && !empty($row['nama_kelas'])) {
+            $classroom = Classroom::firstOrCreate([
+                'name' => $row['nama_kelas'],
+                'school_id' => $this->school_id
+            ]);
+            $classroom_id = $classroom->id;
+        } elseif (isset($row['id_kelas']) && !empty($row['id_kelas'])) {
             $classroom = Classroom::find($row['id_kelas']);
             $classroom_id = $classroom ? $classroom->id : null;
         }
 
-        return new User([
-            'name' => $row['nama_siswa'],
-            'email' => $row['email'],
-            'password' => Hash::make($row['password'] ?? '12345678'),
-            'role' => 'student',
-            'classroom_id' => $classroom_id,
-            'school_id' => $this->school_id, // Link school based on who is importing
-        ]);
+        // Update data jika email sudah ada, jika belum maka buat baru
+        return User::updateOrCreate(
+            ['email' => $email], // Gunakan email sebagai pencarian unik
+            [
+                'name' => $row['nama_siswa'],
+                'nis' => $row['nis'] ?? null,
+                'nisn' => $row['nisn'] ?? null,
+                'password' => Hash::make($row['password'] ?? '12345678'),
+                'role' => 'student',
+                'classroom_id' => $classroom_id,
+                'school_id' => $this->school_id, 
+            ]
+        );
     }
 }
