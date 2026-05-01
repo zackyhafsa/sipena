@@ -1,6 +1,6 @@
 <div class="space-y-8 animate-fade-in-up max-w-7xl mx-auto">
     <!-- Welcome Header / Mobile Friendly Modern Approach -->
-    <div class="relative bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl p-6 sm:p-10 shadow-xl overflow-hidden border border-blue-500">
+    <div class="relative bg-linear-to-r from-blue-600 to-blue-800 rounded-3xl p-6 sm:p-10 shadow-xl overflow-hidden border border-blue-500">
         <!-- Floating Decorative Blobs -->
         <div class="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
         <div class="absolute -bottom-24 -left-10 w-48 h-48 bg-emerald-400/20 rounded-full blur-2xl"></div>
@@ -44,7 +44,7 @@
         </div>
 
         @if($exams->isEmpty())
-            <div class="bg-white rounded-3xl p-12 text-center border-2 border-dashed border-gray-200 shadow-sm flex flex-col items-center justify-center py-20 min-h-[400px]">
+            <div class="bg-white rounded-3xl p-12 text-center border-2 border-dashed border-gray-200 shadow-sm flex flex-col items-center justify-center py-20 min-h-100">
                 <div class="inline-flex items-center justify-center p-6 rounded-full bg-gray-50 mb-6 drop-shadow-sm">
                     <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 </div>
@@ -78,9 +78,9 @@
                         </div>
 
                         <!-- Card Content -->
-                        <div class="px-6 py-5 flex-grow">
+                        <div class="px-6 py-5 grow">
                             <h3 class="text-xl font-black text-gray-900 mb-2 leading-snug line-clamp-2" title="{{ $exam->title }}">{{ $exam->title }}</h3>
-                            <p class="text-gray-500 text-sm mb-6 line-clamp-2 min-h-[40px] font-medium leading-relaxed">{{ $exam->description ?? 'Tidak ada petunjuk tambahan' }}</p>
+                            <p class="text-gray-500 text-sm mb-6 line-clamp-2 min-h-10 font-medium leading-relaxed">{{ $exam->description ?? 'Tidak ada petunjuk tambahan' }}</p>
                             
                             <!-- Exam Details Mini-grid -->
                             <div class="grid grid-cols-2 gap-3 mb-2">
@@ -119,7 +119,7 @@
                                             </div>
                                         </div>
                                         <!-- Total -->
-                                        <div class="bg-gradient-to-tr from-blue-50 to-emerald-50 border border-emerald-100 p-3 rounded-xl shadow-sm">
+                                        <div class="bg-linear-to-tr from-blue-50 to-emerald-50 border border-emerald-100 p-3 rounded-xl shadow-sm">
                                             <span class="block text-blue-600/70 text-[10px] font-black uppercase tracking-widest mb-1.5">Nilai Total</span>
                                             @if($result->is_scored_manually && $result->score === null)
                                                 <span class="text-xs font-black text-amber-600 uppercase tracking-widest">Tertunda</span>
@@ -181,7 +181,7 @@
                 
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-8 sm:pb-6">
                     <div class="sm:flex sm:items-start flex-col items-center text-center">
-                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 border-4 border-white shadow-sm mb-5 relative">
+                        <div class="mx-auto shrink-0 flex items-center justify-center h-16 w-16 rounded-full bg-blue-50 border-4 border-white shadow-sm mb-5 relative">
                             <span class="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-20 animate-ping"></span>
                             <svg class="h-7 w-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>

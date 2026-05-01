@@ -189,7 +189,7 @@
                         x-text="`Soal ${currentTab + 1} dari {{ count($questions) }}`"></div>
 
                     <!-- Wrapper Tombol (Kiri Kanan di Mobile) -->
-                    <div class="w-full sm:w-auto grid grid-cols-2 sm:flex gap-3 sm:order-1 sm:order-3">
+                    <div class="w-full sm:w-auto grid grid-cols-2 sm:flex gap-3 sm:order-1">
                         <button type="button" :disabled="currentTab === 0"
                             @click="if(currentTab > 0) { currentTab--; window.scrollTo({top: 0, behavior: 'smooth'}) }"
                             :class="currentTab === 0 ? 'opacity-50 cursor-not-allowed bg-gray-50 text-gray-400' :
@@ -252,13 +252,13 @@
                         @foreach ($questions as $index => $question)
                             <button type="button"
                                 @click="currentTab = {{ $index }}; window.scrollTo({top: 0, behavior: 'smooth'})" :class="{
-                                        'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
-                                            {{ $index }},
-                                        'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
-                                            {{ $question->id }}],
-                                        'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
-                                            !$wire.answers[{{ $question->id }}]
-                                    }"
+                                                'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
+                                                    {{ $index }},
+                                                'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
+                                                    {{ $question->id }}],
+                                                'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
+                                                    !$wire.answers[{{ $question->id }}]
+                                            }"
                                 class="w-full aspect-square flex flex-col items-center justify-center rounded-xl border text-sm transition-all transform origin-center relative {{ $question->type === 'essay' ? 'border-b-[3px] border-b-amber-500' : '' }}">
                                 {{ $index + 1 }}
                                 <!-- Indikator hijau kecil untuk soal yang sudah dijawab jika sedang tidak fokus -->

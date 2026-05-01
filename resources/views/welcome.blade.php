@@ -136,7 +136,7 @@
                             class="hidden sm:inline-flex px-6 py-2 rounded-full text-sm font-bold text-gray-700 bg-transparent hover:bg-gray-100 transition-all border border-gray-200">Portal
                             Guru</a>
                         <a href="{{ route('login') }}"
-                            class="px-6 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-emerald-500 hover:from-blue-700 hover:to-emerald-600 hover:shadow-lg hover:shadow-blue-500/30 transition-all transform hover:-translate-y-0.5">Masuk
+                            class="px-6 py-2.5 rounded-full text-sm font-bold text-white bg-linear-to-r from-blue-600 to-emerald-500 hover:from-blue-700 hover:to-emerald-600 hover:shadow-lg hover:shadow-blue-500/30 transition-all transform hover:-translate-y-0.5">Masuk
                             Siswa</a>
                     @endauth
                 </div>
@@ -185,7 +185,7 @@
                                 Active &rarr;</a>
                         @else
                             <a href="{{ route('login') }}"
-                                class="px-8 py-4 text-base font-bold rounded-full shadow-xl shadow-blue-500/20 text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                                class="px-8 py-4 text-base font-bold rounded-full shadow-xl shadow-blue-500/20 text-white bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
                                 Mulai Coba Ujian
                                 <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -201,12 +201,12 @@
                 </div>
 
                 <!-- Graphic/Mockup Composition Column -->
-                <div class="relative w-full h-[450px] lg:h-[600px] hidden md:flex items-center justify-center animate-fade-in-up"
+                <div class="relative w-full h-112.5 lg:h-150 hidden md:flex items-center justify-center animate-fade-in-up"
                     style="animation-delay: 0.4s;">
                     <!-- Virtual App Card -->
                     <div class="relative w-full max-w-md">
                         <div
-                            class="bg-white rounded-[2rem] shadow-2xl shadow-blue-900/10 p-8 border border-white z-20 relative transform transition-transform hover:-translate-y-2 duration-500 glass-card">
+                            class="bg-white rounded-4xl shadow-2xl shadow-blue-900/10 p-8 border border-white z-20 relative transform transition-transform hover:-translate-y-2 duration-500 glass-card">
                             <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
                                 <img src="{{ asset('logo/logo.png') }}" class="w-12 h-12 drop-shadow-sm">
                                 <div
@@ -221,12 +221,12 @@
 
                                 <div class="grid grid-cols-2 gap-4 mt-8">
                                     <div
-                                        class="h-20 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl flex flex-col justify-center px-4">
+                                        class="h-20 bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl flex flex-col justify-center px-4">
                                         <span class="w-6 h-6 bg-blue-200 rounded-full mb-2"></span>
                                         <div class="w-1/2 h-2 bg-blue-300 rounded"></div>
                                     </div>
                                     <div
-                                        class="h-20 bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-2xl flex flex-col justify-center px-4">
+                                        class="h-20 bg-linear-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-2xl flex flex-col justify-center px-4">
                                         <span class="w-6 h-6 bg-emerald-200 rounded-full mb-2"></span>
                                         <div class="w-1/2 h-2 bg-emerald-300 rounded"></div>
                                     </div>
@@ -472,8 +472,8 @@
         class="py-28 relative overflow-hidden bg-gray-900 flex justify-center border-t-8 border-blue-600">
         <!-- Decoration Inside Black Box -->
         <div class="absolute inset-0 z-0">
-            <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-blue-900/40 to-transparent"></div>
-            <div class="absolute bottom-0 left-0 w-1/2 h-full bg-gradient-to-tr from-emerald-900/20 to-transparent">
+            <div class="absolute top-0 right-0 w-1/2 h-full bg-linear-to-bl from-blue-900/40 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 w-1/2 h-full bg-linear-to-tr from-emerald-900/20 to-transparent">
             </div>
         </div>
 

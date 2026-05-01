@@ -15,7 +15,7 @@
                    hover:border-gray-400
                    focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20
                    dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100
-                   dark:[color-scheme:dark]
+                   dark:scheme-dark
                    dark:hover:border-gray-500 dark:hover:bg-gray-750
                    dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20">
             <option value="">Semua Sekolah</option>
