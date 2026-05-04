@@ -107,77 +107,141 @@ class ExamResultsTable
                         $pgScore = $record->score_pg ?? 0;
                         $answers = is_array($record->answers_log) ? ($record->answers_log['answers'] ?? $record->answers_log) : [];
 
+                        // ── Info skor PG ──────────────────────────────────────────────
                         $schemas[] = Placeholder::make('info')
                             ->label('Informasi Nilai Otomatis')
                             ->content(new HtmlString("
                                 <div class='flex items-center gap-2'>
-                                    <span class='text-lg font-bold text-gray-800 dark:text-gray-100'>Skor Pilihan Ganda (Skala 100):</span>
-                                    <span class='px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold dark:bg-blue-900 dark:text-blue-200'>{$pgScore}</span>
+                                    <span class='text-lg font-bold text-gray-800 dark:text-gray-100'>
+                                        Skor Pilihan Ganda (Skala 100):
+                                    </span>
+                                    <span class='px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold
+                                                dark:bg-blue-900 dark:text-blue-200'>
+                                        {$pgScore}
+                                    </span>
                                 </div>
                             "));
 
-                        // Load questions
                         $questions = $record->exam->questions;
 
                         foreach ($questions as $index => $question) {
                             $num = $index + 1;
                             $userAnswer = $answers[$question->id] ?? '-';
 
+                            // ── Gambar soal (shared) ──────────────────────────────────
+                            $imageHtml = '';
+                            if ($question->image_path) {
+                                $imageUrl = asset('storage/'.$question->image_path);
+                                $imageHtml = "
+                                    <div class='mb-3'>
+                                        <img src='{$imageUrl}' alt='Gambar Soal'
+                                             class='max-w-full max-h-52 rounded-lg border border-gray-200 dark:border-gray-600'>
+                                    </div>";
+                            }
+
                             if ($question->type === 'multiple_choice') {
+                                // ── Pilihan Ganda ─────────────────────────────────────
                                 $correctAnswer = $question->correct_answer ?? '-';
                                 $isCorrect = $userAnswer === $correctAnswer;
 
                                 $statusBadge = $isCorrect
-                                    ? "<span class='px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold dark:bg-green-900/40 dark:text-green-200'>Benar</span>"
-                                    : "<span class='px-2 py-1 rounded-md bg-red-100 text-red-700 text-xs font-bold dark:bg-red-900/40 dark:text-red-200'>Salah</span>";
+                                    ? "<span class='px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold
+                                                dark:bg-green-500 dark:text-gray-900'>Benar</span>"
+                                    : "<span class='px-2 py-1 rounded-md bg-red-100 text-red-700 text-xs font-bold
+                                                dark:bg-red-500 dark:text-gray-900'>Salah</span>";
 
-                                $imageHtml = '';
-                                if ($question->image_path) {
-                                    $imageUrl = asset('storage/'.$question->image_path);
-                                    $imageHtml = "<div class='mb-3'><img src='{$imageUrl}' alt='Gambar Soal' style='max-width:100%;max-height:200px;border-radius:8px;border:1px solid #e5e7eb;'></div>";
-                                }
+                                $answerColor = $isCorrect
+                                    ? 'text-green-600 dark:text-green-400'
+                                    : 'text-red-600   dark:text-red-400';
 
                                 $schemas[] = Placeholder::make("pg_{$question->id}")
-                                    ->label(new HtmlString("<span class='text-gray-700 font-semibold dark:text-gray-200'>{$num}. Pilihan Ganda</span> {$statusBadge}"))
+                                    ->label(new HtmlString("
+                                        <span class='text-gray-700 font-semibold dark:text-gray-100'>
+                                            {$num}. Pilihan Ganda
+                                        </span>
+                                        {$statusBadge}
+                                    "))
                                     ->content(new HtmlString("
-                                        <div class='mt-2 p-4 rounded-xl border border-gray-700 bg-gray-800'>
-                                            <div class='mb-3 text-gray-100 font-medium'>{$question->question_text}</div>
+                                        <div class='mt-2 p-4 rounded-xl bg-gray-50 dark:bg-gray-800'>
+
+                                            <div class='mb-3 font-medium
+                                                        text-gray-800 dark:text-gray-100'>
+                                                {$question->question_text}
+                                            </div>
+
                                             {$imageHtml}
+
                                             <div class='grid grid-cols-2 gap-4'>
                                                 <div>
-                                                    <span class='text-xs font-bold uppercase tracking-wider text-gray-400'>Jawaban Siswa</span>
-                                                    <div class='mt-1 text-lg font-bold ".($isCorrect ? 'text-green-400' : 'text-red-400')."'>{$userAnswer}</div>
+                                                    <span class='text-xs font-bold uppercase tracking-wider
+                                                                 text-gray-500 dark:text-gray-100'>
+                                                        Jawaban Siswa
+                                                    </span>
+                                                    <div class='mt-1 text-lg font-bold {$answerColor}'>
+                                                        {$userAnswer}
+                                                    </div>
                                                 </div>
                                                 <div>
-                                                    <span class='text-xs font-bold uppercase tracking-wider text-gray-400'>Kunci Jawaban</span>
-                                                    <div class='mt-1 text-lg font-bold text-gray-100'>{$correctAnswer}</div>
+                                                    <span class='text-xs font-bold uppercase tracking-wider
+                                                                 text-gray-500 dark:text-gray-100'>
+                                                        Kunci Jawaban
+                                                    </span>
+                                                    <div class='mt-1 text-lg font-bold
+                                                                text-gray-800 dark:text-white'>
+                                                        {$correctAnswer}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     "));
-                            } else {
-                                $correctAnswerEssay = $question->correct_answer_essay ?: '<em>Tidak ada acuan khusus</em>';
 
-                                $imageHtml = '';
-                                if ($question->image_path) {
-                                    $imageUrl = asset('storage/'.$question->image_path);
-                                    $imageHtml = "<div class='mb-3'><img src='{$imageUrl}' alt='Gambar Soal' style='max-width:100%;max-height:200px;border-radius:8px;border:1px solid #e5e7eb;'></div>";
-                                }
+                            } else {
+                                // ── Esai ──────────────────────────────────────────────
+                                $correctAnswerEssay = $question->correct_answer_essay
+                                    ?: '<em>Tidak ada acuan khusus</em>';
+
+                                $jawabanSiswa = ($userAnswer === '-')
+                                    ? '<em class="text-gray-400">Tidak dijawab</em>'
+                                    : $userAnswer;
 
                                 $schemas[] = Placeholder::make("essay_{$question->id}")
-                                    ->label(new HtmlString("<span class='text-indigo-700 font-semibold dark:text-white'>{$num}. Esai</span>"))
+                                    ->label(new HtmlString("
+                                        <span class='font-semibold text-indigo-600 dark:text-gray-100'>
+                                            {$num}. Esai
+                                        </span>
+                                    "))
                                     ->content(new HtmlString("
-                                        <div class='mt-2 p-4 rounded-xl border border-gray-700 bg-gray-800'>
-                                            <div class='mb-3 text-gray-100 font-medium'>{$question->question_text}</div>
+                                        <div class='mt-2 p-4 rounded-xl bg-gray-50 dark:bg-gray-800'>
+
+                                            <div class='mb-3 font-medium
+                                                        text-gray-800 dark:text-gray-100'>
+                                                {$question->question_text}
+                                            </div>
+
                                             {$imageHtml}
+
                                             <div class='space-y-4'>
                                                 <div>
-                                                    <span class='text-xs text-gray-400 font-bold uppercase tracking-wider'>Jawaban Siswa</span>
-                                                    <div class='mt-1 p-3 rounded-lg border border-gray-600 bg-gray-900 dark:no-border text-gray-200 whitespace-pre-wrap'>".($userAnswer === '-' ? '<em>Tidak dijawab</em>' : $userAnswer)."</div>
+                                                    <span class='text-xs font-bold uppercase tracking-wider
+                                                                 text-gray-500 dark:text-gray-100'>
+                                                        Jawaban Siswa
+                                                    </span>
+                                                    <div class='mt-1 p-3 rounded-lg whitespace-pre-wrap
+                                                                bg-white text-gray-700
+                                                                dark:bg-gray-900 dark:text-gray-200'>
+                                                        {$jawabanSiswa}
+                                                    </div>
                                                 </div>
                                                 <div>
-                                                    <span class='text-xs text-gray-400 font-bold uppercase tracking-wider'>Acuan Jawaban (Guru)</span>
-                                                    <div class='mt-1 p-3 rounded-lg border border-gray-600 bg-gray-900 text-indigo-200 whitespace-pre-wrap'>{$correctAnswerEssay}</div>
+                                                    <span class='text-xs font-bold uppercase tracking-wider
+                                                                 text-gray-500 dark:text-gray-100'>
+                                                        Acuan Jawaban (Guru)
+                                                    </span>
+                                                    <div class='mt-1 p-3 rounded-lg whitespace-pre-wrap
+                                                                bg-indigo-50 text-indigo-700
+                                                                dark:bg-indigo-950/40 dark:text-indigo-200'>
+                                                        {$correctAnswerEssay}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -212,10 +276,7 @@ class ExamResultsTable
                         $pgWeight = $record->exam->pg_weight ?? 70;
                         $essayWeight = $record->exam->essay_weight ?? 30;
 
-                        $weightedPG = ($pgScore * $pgWeight) / 100;
-                        $weightedEssay = ($essayScore * $essayWeight) / 100;
-
-                        $finalScore = $weightedPG + $weightedEssay;
+                        $finalScore = ($pgScore * $pgWeight / 100) + ($essayScore * $essayWeight / 100);
 
                         $record->update([
                             'score_essay' => $essayScore,
@@ -225,6 +286,7 @@ class ExamResultsTable
                     })
                     ->modalWidth('4xl')
                     ->modalHeading(fn ($record) => 'Lembar Jawaban: '.$record->user->name),
+
                 EditAction::make(),
                 DeleteAction::make(),
             ])
@@ -246,14 +308,10 @@ class ExamResultsTable
                                 'school' => $school,
                             ])->setPaper('a4', 'landscape');
 
-                            return response()->streamDownload(fn () => print ($pdf->output()), 'rekap-hasil-ujian.pdf');
-                            iew('exports.exam-results-pdf', [
-                                'records' => $records,
-                                'date' => now()->format('d M Y H:i'),
-                                'school' => $school,
-                            ])->setPaper('a4', 'landscape');
-
-                            return response()->streamDownload(fn () => print ($pdf->output()), 'rekap-hasil-ujian.pdf');
+                            return response()->streamDownload(
+                                fn () => print ($pdf->output()),
+                                'rekap-hasil-ujian.pdf'
+                            );
                         }),
                     DeleteBulkAction::make(),
                 ]),
