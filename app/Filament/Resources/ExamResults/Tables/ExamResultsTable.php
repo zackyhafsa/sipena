@@ -135,7 +135,7 @@ class ExamResultsTable
                                 $imageHtml = "
                                     <div class='mb-3'>
                                         <img src='{$imageUrl}' alt='Gambar Soal'
-                                             class='max-w-full max-h-52 rounded-lg border border-gray-200 dark:border-gray-600'>
+                                             class='max-w-xs max-h-32 object-contain rounded-lg border border-gray-200 dark:border-gray-600'>
                                     </div>";
                             }
 

@@ -74,12 +74,12 @@ class SchoolResource extends Resource
                     ->label('Logo Sekolah')
                     ->image()
                     ->directory('school-logos')
-                    ->maxSize(2048),
+                    ->maxSize(1024),
                 FileUpload::make('logo_kabupaten')
                     ->label('Logo Kabupaten/Kota')
                     ->image()
                     ->directory('kabupaten-logos')
-                    ->maxSize(2048),
+                    ->maxSize(1024),
             ])->columns(2);
     }
 

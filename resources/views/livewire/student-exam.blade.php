@@ -69,14 +69,14 @@
                 </div>
             </div>
 
-            <div class="mt-4 lg:mt-0 flex items-center justify-between lg:justify-end gap-4">
-                <div
-                    class="flex items-center gap-2.5 bg-indigo-50/80 text-indigo-700 px-5 py-2.5 rounded-xl font-bold border border-indigo-100 shadow-sm">
+            <div class="mt-4 lg:mt-0 flex items-center justify-between lg:justify-end gap-4" x-data="examTimer()">
+                <div class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-bold border shadow-sm transition-colors"
+                    :class="remainingSeconds <= 300 ? 'bg-red-50 text-red-600 border-red-200' : 'bg-indigo-50/80 text-indigo-700 border-indigo-100'">
                     <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span>Durasi: {{ $exam->duration }} Menit</span>
+                    <span x-text="timeDisplay">Memuat Waktu...</span>
                 </div>
             </div>
         </div>
@@ -128,7 +128,7 @@
                                         'option_d',
                                         'option_e',
                                     ];
-                                    $displayLetters = ['A', 'B', 'C', 'D', 'E'];
+                                    // $displayLetters = ['A', 'B', 'C', 'D', 'E'];
                                     $currentOptIdx = 0;
                                 @endphp
                                 @foreach ($optionsList as $optionField)
@@ -154,12 +154,12 @@
                                                 </div>
                                                 <div class="flex flex-col w-full">
                                                     <div class="flex items-start w-full">
-                                                        <span
-                                                            class="inline-block w-6 font-bold text-gray-400 mt-1">{{ $displayLetters[$currentOptIdx++] }}.</span>
+                                                        {{-- <span class="inline-block w-6 font-bold text-gray-400 mt-1">{{
+                                                            $displayLetters[$currentOptIdx++] }}.</span> --}}
                                                         <div class="flex flex-col gap-3 w-full">
                                                             @if ($question->$imageField)
                                                                 <img src="{{ asset('storage/' . $question->$imageField) }}"
-                                                                    alt="Opsi {{ $displayLetters[$currentOptIdx - 1] }}"
+                                                                    alt="Gambar Opsi"
                                                                     class="max-w-xs md:max-w-md max-h-48 rounded-lg shadow-sm object-contain bg-white border border-gray-100">
                                                             @endif
                                                             @if ($question->$optionField)
@@ -252,13 +252,13 @@
                         @foreach ($questions as $index => $question)
                             <button type="button"
                                 @click="currentTab = {{ $index }}; window.scrollTo({top: 0, behavior: 'smooth'})" :class="{
-                                                'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
-                                                    {{ $index }},
-                                                'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
-                                                    {{ $question->id }}],
-                                                'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
-                                                    !$wire.answers[{{ $question->id }}]
-                                            }"
+                                                                            'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
+                                                                                {{ $index }},
+                                                                            'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
+                                                                                {{ $question->id }}],
+                                                                            'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
+                                                                                !$wire.answers[{{ $question->id }}]
+                                                                        }"
                                 class="w-full aspect-square flex flex-col items-center justify-center rounded-xl border text-sm transition-all transform origin-center relative {{ $question->type === 'essay' ? 'border-b-[3px] border-b-amber-500' : '' }}">
                                 {{ $index + 1 }}
                                 <!-- Indikator hijau kecil untuk soal yang sudah dijawab jika sedang tidak fokus -->
@@ -497,6 +497,61 @@
                 await $wire.registerViolation();
             }
         }));
+
+        Alpine.data('examTimer', () => {
+            const getRemainingSeconds = () => {
+                const startedAt = "{{ \Carbon\Carbon::parse($started_at)->format('Y-m-d H:i:s') }}";
+                const examDuration = {{ $exam->duration }};
+
+                // Mengkonversi timestamp dan menambahkan durasi (dalam menit)
+                const startTime = new Date(startedAt.replace(/-/g, '/')).getTime();
+                const endTime = startTime + (examDuration * 60 * 1000);
+                const serverTimeNow = new Date("{{ now()->format('Y-m-d H:i:s') }}".replace(/-/g, '/')).getTime();
+
+                // Menghitung selisih waktu server dengan waktu lokal client untuk akurasi
+                const timeDiff = new Date().getTime() - serverTimeNow;
+
+                // Hitung sisa waktu yang benar
+                const now = new Date().getTime() - timeDiff;
+                const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+                return remaining;
+            };
+
+            return {
+                remainingSeconds: getRemainingSeconds(),
+                timeDisplay: 'Memuat...',
+                timerInterval: null,
+
+                init() {
+                    this.updateDisplay();
+                    this.timerInterval = setInterval(() => {
+                        this.remainingSeconds--;
+
+                        if (this.remainingSeconds <= 0) {
+                            clearInterval(this.timerInterval);
+                            this.timeDisplay = 'Waktu Habis!';
+                            if (typeof $wire !== 'undefined') {
+                                $wire.submit();
+                            }
+                        } else {
+                            this.updateDisplay();
+                        }
+                    }, 1000);
+                },
+
+                updateDisplay() {
+                    let h = Math.floor(this.remainingSeconds / 3600);
+                    let m = Math.floor((this.remainingSeconds % 3600) / 60);
+                    let s = Math.floor(this.remainingSeconds % 60);
+
+                    let res = '';
+                    if (h > 0) res += h.toString().padStart(2, '0') + ':';
+                    res += m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+
+                    this.timeDisplay = "Sisa Waktu: " + res;
+                }
+            };
+        });
     </script>
     @endscript
 </div>
