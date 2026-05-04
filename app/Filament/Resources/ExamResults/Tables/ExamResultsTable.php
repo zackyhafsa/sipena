@@ -2,10 +2,15 @@
 
 namespace App\Filament\Resources\ExamResults\Tables;
 
+use App\Helpers\SchoolContext;
+use App\Models\School;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +20,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\HtmlString;
 
 class ExamResultsTable
@@ -106,7 +112,7 @@ class ExamResultsTable
                             ->content(new HtmlString("
                                 <div class='flex items-center gap-2'>
                                     <span class='text-lg font-bold text-gray-800 dark:text-gray-100'>Skor Pilihan Ganda (Skala 100):</span>
-                                    <span class='px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold dark:bg-blue-900/40 dark:text-blue-200'>{$pgScore}</span>
+                                    <span class='px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold dark:bg-blue-900 dark:text-blue-200'>{$pgScore}</span>
                                 </div>
                             "));
 
@@ -127,24 +133,24 @@ class ExamResultsTable
 
                                 $imageHtml = '';
                                 if ($question->image_path) {
-                                    $imageUrl = asset('storage/' . $question->image_path);
+                                    $imageUrl = asset('storage/'.$question->image_path);
                                     $imageHtml = "<div class='mb-3'><img src='{$imageUrl}' alt='Gambar Soal' style='max-width:100%;max-height:200px;border-radius:8px;border:1px solid #e5e7eb;'></div>";
                                 }
 
                                 $schemas[] = Placeholder::make("pg_{$question->id}")
                                     ->label(new HtmlString("<span class='text-gray-700 font-semibold dark:text-gray-200'>{$num}. Pilihan Ganda</span> {$statusBadge}"))
                                     ->content(new HtmlString("
-                                        <div class='mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900/60 dark:border-gray-700'>
-                                            <div class='mb-3 text-gray-800 font-medium dark:text-gray-100'>{$question->question_text}</div>
+                                        <div class='mt-2 p-4 rounded-xl border border-gray-700 bg-gray-800'>
+                                            <div class='mb-3 text-gray-100 font-medium'>{$question->question_text}</div>
                                             {$imageHtml}
                                             <div class='grid grid-cols-2 gap-4'>
                                                 <div>
-                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider dark:text-gray-400'>Jawaban Siswa</span>
-                                                    <div class='mt-1 text-lg font-bold ".($isCorrect ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300')."'>{$userAnswer}</div>
+                                                    <span class='text-xs font-bold uppercase tracking-wider text-gray-400'>Jawaban Siswa</span>
+                                                    <div class='mt-1 text-lg font-bold ".($isCorrect ? 'text-green-400' : 'text-red-400')."'>{$userAnswer}</div>
                                                 </div>
                                                 <div>
-                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider dark:text-gray-400'>Kunci Jawaban</span>
-                                                    <div class='mt-1 text-lg font-bold text-gray-800 dark:text-gray-100'>{$correctAnswer}</div>
+                                                    <span class='text-xs font-bold uppercase tracking-wider text-gray-400'>Kunci Jawaban</span>
+                                                    <div class='mt-1 text-lg font-bold text-gray-100'>{$correctAnswer}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -154,24 +160,24 @@ class ExamResultsTable
 
                                 $imageHtml = '';
                                 if ($question->image_path) {
-                                    $imageUrl = asset('storage/' . $question->image_path);
+                                    $imageUrl = asset('storage/'.$question->image_path);
                                     $imageHtml = "<div class='mb-3'><img src='{$imageUrl}' alt='Gambar Soal' style='max-width:100%;max-height:200px;border-radius:8px;border:1px solid #e5e7eb;'></div>";
                                 }
 
                                 $schemas[] = Placeholder::make("essay_{$question->id}")
-                                    ->label(new HtmlString("<span class='text-indigo-700 font-semibold dark:text-indigo-200'>{$num}. Esai</span>"))
+                                    ->label(new HtmlString("<span class='text-indigo-700 font-semibold dark:text-white'>{$num}. Esai</span>"))
                                     ->content(new HtmlString("
-                                        <div class='mt-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-800/60'>
-                                            <div class='mb-3 text-gray-800 font-medium dark:text-gray-100'>{$question->question_text}</div>
+                                        <div class='mt-2 p-4 rounded-xl border border-gray-700 bg-gray-800'>
+                                            <div class='mb-3 text-gray-100 font-medium'>{$question->question_text}</div>
                                             {$imageHtml}
                                             <div class='space-y-4'>
                                                 <div>
-                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider dark:text-gray-400'>Jawaban Siswa</span>
-                                                    <div class='mt-1 p-3 bg-white rounded-lg border border-gray-200 text-gray-800 whitespace-pre-wrap dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100'>".($userAnswer === '-' ? '<em>Tidak dijawab</em>' : $userAnswer)."</div>
+                                                    <span class='text-xs text-gray-400 font-bold uppercase tracking-wider'>Jawaban Siswa</span>
+                                                    <div class='mt-1 p-3 rounded-lg border border-gray-600 bg-gray-900 dark:no-border text-gray-200 whitespace-pre-wrap'>".($userAnswer === '-' ? '<em>Tidak dijawab</em>' : $userAnswer)."</div>
                                                 </div>
                                                 <div>
-                                                    <span class='text-xs text-gray-500 font-bold uppercase tracking-wider dark:text-gray-400'>Acuan Jawaban (Guru)</span>
-                                                    <div class='mt-1 p-3 bg-indigo-50 rounded-lg text-indigo-900 border border-indigo-100 whitespace-pre-wrap dark:bg-indigo-900/40 dark:text-indigo-100 dark:border-indigo-800/60'>{$correctAnswerEssay}</div>
+                                                    <span class='text-xs text-gray-400 font-bold uppercase tracking-wider'>Acuan Jawaban (Guru)</span>
+                                                    <div class='mt-1 p-3 rounded-lg border border-gray-600 bg-gray-900 text-indigo-200 whitespace-pre-wrap'>{$correctAnswerEssay}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -202,13 +208,13 @@ class ExamResultsTable
                     ->action(function (array $data, $record): void {
                         $pgScore = $record->score_pg ?? 0;
                         $essayScore = $data['essay_score'];
-                        
+
                         $pgWeight = $record->exam->pg_weight ?? 70;
                         $essayWeight = $record->exam->essay_weight ?? 30;
-                        
+
                         $weightedPG = ($pgScore * $pgWeight) / 100;
                         $weightedEssay = ($essayScore * $essayWeight) / 100;
-                        
+
                         $finalScore = $weightedPG + $weightedEssay;
 
                         $record->update([
@@ -219,28 +225,35 @@ class ExamResultsTable
                     })
                     ->modalWidth('4xl')
                     ->modalHeading(fn ($record) => 'Lembar Jawaban: '.$record->user->name),
-                \Filament\Actions\EditAction::make(),
+                EditAction::make(),
                 DeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    \Filament\Actions\BulkAction::make('export_pdf')
+                    BulkAction::make('export_pdf')
                         ->label('Cetak Rekap (PDF)')
                         ->icon('heroicon-o-document-arrow-down')
                         ->color('danger')
-                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                        ->action(function (Collection $records) {
                             $records->load(['user.classroom', 'exam']);
 
-                            $schoolId = \App\Helpers\SchoolContext::getActiveSchoolId();
-                            $school = $schoolId ? \App\Models\School::find($schoolId) : null;
+                            $schoolId = SchoolContext::getActiveSchoolId();
+                            $school = $schoolId ? School::find($schoolId) : null;
 
-                            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.exam-results-pdf', [
+                            $pdf = Pdf::loadView('exports.exam-results-pdf', [
                                 'records' => $records,
                                 'date' => now()->format('d M Y H:i'),
                                 'school' => $school,
                             ])->setPaper('a4', 'landscape');
 
-                            return response()->streamDownload(fn () => print($pdf->output()), 'rekap-hasil-ujian.pdf');
+                            return response()->streamDownload(fn () => print ($pdf->output()), 'rekap-hasil-ujian.pdf');
+                            iew('exports.exam-results-pdf', [
+                                'records' => $records,
+                                'date' => now()->format('d M Y H:i'),
+                                'school' => $school,
+                            ])->setPaper('a4', 'landscape');
+
+                            return response()->streamDownload(fn () => print ($pdf->output()), 'rekap-hasil-ujian.pdf');
                         }),
                     DeleteBulkAction::make(),
                 ]),

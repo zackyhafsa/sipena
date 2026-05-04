@@ -33,11 +33,18 @@ class UserForm
                             ->maxLength(255),
                         Select::make('role')
                             ->label('Peran (Role)')
-                            ->options([
-                                'student' => 'Siswa',
-                                'admin' => 'Admin (Guru)',
-                                'superadmin' => 'Super Admin',
-                            ])
+                            ->options(function () {
+                                $options = [
+                                    'student' => 'Siswa',
+                                    'admin' => 'Admin (Guru)',
+                                ];
+                                
+                                if (auth()->user()->role === 'superadmin') {
+                                    $options['superadmin'] = 'Super Admin';
+                                }
+                                
+                                return $options;
+                            })
                             ->default('student')
                             ->required(),
                         Select::make('classroom_id')

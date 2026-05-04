@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName('SIPENA')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Green,
             ])
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

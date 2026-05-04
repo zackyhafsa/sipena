@@ -2,51 +2,36 @@
 
 namespace App\Exports;
 
-use Carbon\Carbon;
+use App\Helpers\SchoolContext;
+use App\Models\School;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ExamResultsExport implements FromCollection, WithHeadings, WithMapping
+class ExamResultsExport implements FromView, ShouldAutoSize, WithStyles
 {
     public function __construct(private Collection $records) {}
 
-    public function collection(): Collection
+    public function view(): View
     {
-        return $this->records;
+        $schoolId = SchoolContext::getActiveSchoolId();
+        $school = $schoolId ? School::find($schoolId) : null;
+
+        return view('exports.exam-results-excel', [
+            'records' => $this->records,
+            'school' => $school,
+            'date' => now()->format('d M Y H:i'),
+        ]);
     }
 
-    public function headings(): array
+    public function styles(Worksheet $sheet)
     {
         return [
-            'No',
-            'Nama Siswa',
-            'Kelas',
-            'Ujian',
-            'Nilai PG',
-            'Nilai Esai',
-            'Nilai Akhir',
-            'Pelanggaran',
-            'Waktu Selesai',
-        ];
-    }
-
-    public function map($record): array
-    {
-        static $no = 0;
-        $no++;
-
-        return [
-            $no,
-            $record->user->name ?? '-',
-            $record->user->classroom->name ?? '-',
-            $record->exam->title ?? '-',
-            $record->score_pg ?? 0,
-            $record->score_essay ?? ($record->is_scored_manually ? 'Proses' : 0),
-            $record->score ?? 'Menunggu Koreksi',
-            $record->cheat_warning_count ?? 0,
-            $record->finished_at ? Carbon::parse($record->finished_at)->format('d M Y - H:i') : '-',
+            // Style the first row as the main letterhead (if school is present)
+            1    => ['font' => ['bold' => true, 'size' => 14]],
         ];
     }
 }
