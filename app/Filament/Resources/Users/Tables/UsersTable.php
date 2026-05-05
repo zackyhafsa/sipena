@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -30,7 +30,8 @@ class UsersTable
                         'admin' => 'warning',
                         'student' => 'success',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {                                                                                                   'superadmin' => 'Super Admin',
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'superadmin' => 'Super Admin',
                         'admin' => 'Admin (Guru)',
                         'student' => 'Siswa',
                         default => $state,
@@ -42,7 +43,7 @@ class UsersTable
                     ->label('Sekolah')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: fn () => auth()->user()->role === 'admin')
+                    ->toggleable(isToggledHiddenByDefault: fn () => auth()->user()->role === 'admin'),
             ])
             ->filters([
                 //
