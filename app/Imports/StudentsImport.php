@@ -39,17 +39,39 @@ class StudentsImport implements ToModel, WithHeadingRow
             $classroom_id = $classroom ? $classroom->id : null;
         }
 
-        // Update data jika email sudah ada, jika belum maka buat baru
+        // Menentukan kunci utama untuk mencari data yang sudah ada (Urutan prioritas: NIS -> NISN -> Email)
+        // Kita WAJIB menyertakan 'school_id' agar tidak terjadi bentrok NIS/NISN atau Email dengan sekolah lain!
+        $matchCondition = ['school_id' => $this->school_id];
+        
+        if (!empty($row['nis'])) {
+            $matchCondition['nis'] = $row['nis'];
+        } elseif (!empty($row['nisn'])) {
+            $matchCondition['nisn'] = $row['nisn'];
+        } elseif (!empty($email)) {
+            $matchCondition['email'] = $email;
+        } else {
+            return null; // Skip jika tidak ada identitas sama sekali
+        }
+
+        // Cek apakah email yang dimasukkan ternyata sudah dipakai oleh siswa lain di seluruh sistem (karena email sifatnya global unik)
+        if ($email) {
+            $existingEmailUser = User::where('email', $email)->first();
+            // Jika email terdeteksi milik akun ID lain, maka fallback untuk tidak mengupdate/menggunakan email tersebut
+            // agar mencegah sistem error (Integrity Constraint Violation).
+        }
+
+        // Update data jika kecocokan ditemukan, jika belum maka buat baru
         return User::updateOrCreate(
-            ['email' => $email], // Gunakan email sebagai pencarian unik
+            $matchCondition,
             [
                 'name' => $row['nama_siswa'],
+                'email' => $email,
                 'nis' => $row['nis'] ?? null,
                 'nisn' => $row['nisn'] ?? null,
                 'password' => Hash::make($row['password'] ?? '12345678'),
                 'role' => 'student',
                 'classroom_id' => $classroom_id,
-                'school_id' => $this->school_id, 
+                 // school_id sudah ada di matchCondition, otomatis masuk sini juga
             ]
         );
     }

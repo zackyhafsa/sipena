@@ -46,7 +46,11 @@ class User extends Authenticatable implements FilamentUser
     {
         static::deleting(function ($user) {
             if ($user->role === 'superadmin') {
-                return false; // Mencegah superadmin dihapus (bahkan dari sistem)
+                // Cek apakah ini satu-satunya superadmin yang tersisa
+                $superadminCount = self::where('role', 'superadmin')->count();
+                if ($superadminCount <= 1) {
+                    return false; // Mencegah superadmin terakhir dihapus
+                }
             }
         });
     }
