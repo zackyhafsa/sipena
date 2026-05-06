@@ -56,7 +56,16 @@ class StudentResource extends Resource
             ->components([
                 TextInput::make('nis')
                     ->label('NIS')
-                    ->unique(ignoreRecord: true)
+                    ->unique(
+                        modifyRuleUsing: function (\Illuminate\Validation\Rules\Unique $rule, callable $get) {
+                            $schoolId = auth()->user()->role === 'superadmin' ? $get('school_id') : auth()->user()->school_id;
+                            if ($schoolId) {
+                                return $rule->where('school_id', $schoolId);
+                            }
+                            return $rule;
+                        },
+                        ignoreRecord: true
+                    )
                     ->numeric()
                     ->required()
                     ->maxLength(50),
