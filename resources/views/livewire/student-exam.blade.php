@@ -114,7 +114,7 @@
 
                         @if ($question->type === 'essay')
                             <div class="mt-4 grow">
-                                <textarea wire:model.live.debounce.500ms="answers.{{ $question->id }}" rows="6"
+                                <textarea wire:model.live.debounce.1500ms="answers.{{ $question->id }}" rows="6"
                                     class="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-gray-700"
                                     placeholder="Ketik jawaban Anda di sini..."></textarea>
                             </div>
@@ -252,13 +252,13 @@
                         @foreach ($questions as $index => $question)
                             <button type="button"
                                 @click="currentTab = {{ $index }}; window.scrollTo({top: 0, behavior: 'smooth'})" :class="{
-                                                                            'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
-                                                                                {{ $index }},
-                                                                            'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
-                                                                                {{ $question->id }}],
-                                                                            'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
-                                                                                !$wire.answers[{{ $question->id }}]
-                                                                        }"
+                                                                                'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
+                                                                                    {{ $index }},
+                                                                                'bg-indigo-600 text-white border-transparent font-bold shadow-sm': $wire.answers[
+                                                                                    {{ $question->id }}],
+                                                                                'bg-white text-gray-700 border-gray-200 font-medium hover:border-indigo-300 hover:bg-indigo-50/50':
+                                                                                    !$wire.answers[{{ $question->id }}]
+                                                                            }"
                                 class="w-full aspect-square flex flex-col items-center justify-center rounded-xl border text-sm transition-all transform origin-center relative {{ $question->type === 'essay' ? 'border-b-[3px] border-b-amber-500' : '' }}">
                                 {{ $index + 1 }}
                                 <!-- Indikator hijau kecil untuk soal yang sudah dijawab jika sedang tidak fokus -->

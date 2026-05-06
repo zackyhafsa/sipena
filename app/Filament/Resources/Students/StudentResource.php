@@ -34,9 +34,9 @@ class StudentResource extends Resource
     protected static ?string $pluralModelLabel = 'Data Siswa';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Manajemen Sekolah';
-
+    
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
-
+    
     // Limit scope to only 'student' role
     public static function getEloquentQuery(): Builder
     {
@@ -83,6 +83,7 @@ class StudentResource extends Resource
                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $context): bool => $context === 'create'),
+                
                 Select::make('classroom_id')
                     ->label('Kelas')
                     ->relationship('classroom', 'name')
@@ -104,10 +105,11 @@ class StudentResource extends Resource
             ->columns([
                 TextColumn::make('name')->label('Nama')->searchable()->sortable(),
                 TextColumn::make('nis')->label('NIS')->searchable()->toggleable(),
-                TextColumn::make('nisn')->label('NISN')->searchable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('nisn')->label('NISN')->searchable(),
                 TextColumn::make('email')->label('Email')->searchable(),
                 TextColumn::make('classroom.name')
                     ->label('Kelas')
+                    ->searchable()
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('school.name')
@@ -143,11 +145,28 @@ class StudentResource extends Resource
                     ->action(function (array $data) {
                         $file = Storage::path($data['file']);
                         $school_id = auth()->user()->school_id;
-                        Excel::import(new StudentsImport($school_id), $file);
-                        Notification::make()
-                            ->title('Data siswa berhasil diimport.')
-                            ->success()
-                            ->send();
+                        
+                        try {
+                            Excel::import(new StudentsImport($school_id), $file);
+                            Notification::make()
+                                ->title('Data siswa berhasil diimport.')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            $errorMessage = $e->getMessage();
+                            
+                            // Tangkap peringatan dari MySQL native jika ada yang lolos (fallback)
+                            if (str_contains($errorMessage, 'users_email_unique') || str_contains($errorMessage, 'Duplicate entry')) {
+                                $errorMessage = "Terdapat email atau NISN yang sudah terdaftar sebelumnya di sistem. Silakan periksa ulang file Excel Anda.";
+                            }
+                            
+                            Notification::make()
+                                ->title('Proses Import Dihentikan')
+                                ->body($errorMessage)
+                                ->danger()
+                                ->persistent() // Notifikasi butuh ditutup manual oleh admin untuk dibaca
+                                ->send();
+                        }
                     }),
             ]);
     }

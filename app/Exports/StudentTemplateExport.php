@@ -48,10 +48,10 @@ class StudentTemplateExport implements FromArray, WithColumnWidths, WithHeadings
     public function columnWidths(): array
     {
         return [
-            'A' => 15, // nama_siswa
-            'B' => 20, // email_atau_username
-            'C' => 30, // nis
-            'D' => 30, // nisn
+            'A' => 20, // nis
+            'B' => 30, // nisn
+            'C' => 20, // nama_siswa
+            'D' => 25, // email_atau_username
             'E' => 20, // password
             'F' => 20, // nama_kelas
         ];
