@@ -32,29 +32,39 @@ class StudentExam extends Component
     public function mount($exam_id)
     {
         $this->exam_id = $exam_id;
-        $this->exam = Exam::with('questions')->findOrFail($exam_id);
+        
+        // Cache the exam structure for 10 minutes to avoid redundant DB hits for 800 users
+        $cacheKey = "exam_structure_{$exam_id}";
+        $this->exam = cache()->remember($cacheKey, 600, function() use ($exam_id) {
+            return Exam::with(['questions' => function($q) {
+                // Only select what's absolutely necessary for the exam
+                $q->select('id', 'exam_id', 'question_text', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'correct_answer', 'score_weight', 'type');
+            }])->findOrFail($exam_id);
+        });
+
         $this->maxViolations = $this->exam->max_violations;
 
-        // Verifikasi token via session (diset dari dashboard)
+        // Verifikasi token via session
         $schoolId = auth()->user()->school_id;
-        $pivot = $this->exam->schools()->where('school_id', $schoolId)->first()?->pivot;
-        $token = $pivot ? $pivot->token : null;
+        
+        // Optimize pivot lookup
+        $pivot = $this->exam->schools()->where('school_id', $schoolId)->select('exam_school.token')->first()?->token;
+        $token = $pivot;
 
         if (! empty($token) && ! session("exam_token_verified_{$exam_id}")) {
             session()->flash('error', 'Anda harus memasukkan token terlebih dahulu.');
             $this->redirect(route('student.dashboard'));
-
             return;
         }
 
-        $result = ExamResult::where('user_id', auth()->id())
+        // Use exists() for faster check if index is present
+        $alreadyFinished = ExamResult::where('user_id', auth()->id())
             ->where('exam_id', $this->exam_id)
-            ->first();
+            ->exists();
 
-        if ($result) {
+        if ($alreadyFinished) {
             session()->flash('error', 'Anda sudah menyelesaikan ujian ini.');
             $this->redirect(route('student.dashboard'));
-
             return;
         }
 
