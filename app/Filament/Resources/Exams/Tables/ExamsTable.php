@@ -19,6 +19,7 @@ class ExamsTable
                 TextColumn::make('title')
                     ->label('Judul Ujian')
                     ->searchable()
+                    ->searchDebounce('750ms')
                     ->sortable(),
                 TextColumn::make('duration')
                     ->label('Durasi')
