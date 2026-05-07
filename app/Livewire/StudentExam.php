@@ -12,9 +12,11 @@ class StudentExam extends Component
 {
     public $exam_id;
 
-    public $exam;
+    protected $exam;
 
-    public $questions;
+    protected $questions;
+
+    public $questionIds = [];
 
     public $answers = [];
 
@@ -32,22 +34,13 @@ class StudentExam extends Component
     public function mount($exam_id)
     {
         $this->exam_id = $exam_id;
-        
-        // Cache the exam structure for 10 minutes to avoid redundant DB hits for 800 users
-        $cacheKey = "exam_structure_{$exam_id}";
-        $this->exam = cache()->remember($cacheKey, 600, function() use ($exam_id) {
-            return Exam::with(['questions' => function($q) {
-                // Only select what's absolutely necessary for the exam
-                $q->select('id', 'exam_id', 'question_text', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'correct_answer', 'score_weight', 'type');
-            }])->findOrFail($exam_id);
-        });
+        $this->loadExamAndQuestions();
 
         $this->maxViolations = $this->exam->max_violations;
 
         // Verifikasi token via session
         $schoolId = auth()->user()->school_id;
         
-        // Optimize pivot lookup
         $pivot = $this->exam->schools()->where('school_id', $schoolId)->select('exam_school.token')->first()?->token;
         $token = $pivot;
 
@@ -57,7 +50,6 @@ class StudentExam extends Component
             return;
         }
 
-        // Use exists() for faster check if index is present
         $alreadyFinished = ExamResult::where('user_id', auth()->id())
             ->where('exam_id', $this->exam_id)
             ->exists();
@@ -76,15 +68,15 @@ class StudentExam extends Component
             $this->shuffledOptions = $progress['shuffledOptions'] ?? [];
             $this->started_at = $progress['started_at'] ?? now()->toDateTimeString();
             $this->currentQuestionIndex = $progress['currentQuestionIndex'] ?? 0;
-
-            $orderedIds = $progress['questions'] ?? [];
+            $this->questionIds = $progress['questions'] ?? [];
+            
+            // Re-order questions based on session IDs
             $questionsMap = $this->exam->questions->keyBy('id');
-            $this->questions = collect($orderedIds)->map(fn($id) => $questionsMap->get($id))->filter()->values();
+            $this->questions = collect($this->questionIds)->map(fn($id) => $questionsMap->get($id))->filter()->values();
             
             // Tambahkan soal baru jika ada yang baru dimasukkan guru
-            $newQuestions = $this->exam->questions->filter(fn($q) => !in_array($q->id, $orderedIds))->values();
+            $newQuestions = $this->exam->questions->filter(fn($q) => !in_array($q->id, $this->questionIds))->values();
             if ($newQuestions->isNotEmpty()) {
-                
                 if ($this->exam->randomize_questions) {
                     $newPg = $newQuestions->where('type', '!=', 'essay')->shuffle();
                     $newEssay = $newQuestions->where('type', 'essay')->shuffle();
@@ -97,6 +89,7 @@ class StudentExam extends Component
                 $oldEssay = $this->questions->where('type', 'essay');
                 
                 $this->questions = $oldPg->merge($newPg)->merge($oldEssay)->merge($newEssay)->values();
+                $this->questionIds = $this->questions->pluck('id')->toArray();
                 
                 foreach ($newQuestions as $question) {
                     if (!array_key_exists($question->id, $this->answers)) {
@@ -111,10 +104,6 @@ class StudentExam extends Component
                 
                 $this->saveProgressToSession();
             }
-            
-            if ($this->questions->isEmpty()) {
-                $this->questions = $this->exam->questions;
-            }
         } else {
             if ($this->exam->randomize_questions) {
                 $pgQuestions = $this->exam->questions->where('type', '!=', 'essay')->shuffle();
@@ -123,6 +112,8 @@ class StudentExam extends Component
             } else {
                 $this->questions = $this->exam->questions;
             }
+
+            $this->questionIds = $this->questions->pluck('id')->toArray();
 
             foreach ($this->questions as $question) {
                 $this->answers[$question->id] = null;
@@ -139,6 +130,24 @@ class StudentExam extends Component
         }
     }
 
+    protected function loadExamAndQuestions()
+    {
+        $cacheKey = "exam_structure_{$this->exam_id}";
+        $this->exam = cache()->remember($cacheKey, 600, function() {
+            return Exam::with(['questions' => function($q) {
+                $q->select('id', 'exam_id', 'question_text', 'image_path', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'option_a_image', 'option_b_image', 'option_c_image', 'option_d_image', 'option_e_image', 'correct_answer', 'score_weight', 'type');
+            }])->findOrFail($this->exam_id);
+        });
+
+        // Ensure questions are loaded if we have questionIds (for hydration)
+        if (!empty($this->questionIds)) {
+            $questionsMap = $this->exam->questions->keyBy('id');
+            $this->questions = collect($this->questionIds)->map(fn($id) => $questionsMap->get($id))->filter()->values();
+        } else {
+            $this->questions = $this->exam->questions;
+        }
+    }
+
     public function updated($propertyName)
     {
         $this->saveProgressToSession();
@@ -151,7 +160,7 @@ class StudentExam extends Component
             'answers' => $this->answers,
             'violationCount' => $this->violationCount,
             'shuffledOptions' => $this->shuffledOptions,
-            'questions' => $this->questions->pluck('id')->toArray(),
+            'questions' => $this->questionIds,
             'started_at' => $this->started_at,
             'currentQuestionIndex' => $this->currentQuestionIndex,
         ]);
@@ -159,15 +168,13 @@ class StudentExam extends Component
 
     public function goToQuestion($index)
     {
-        if (isset($this->questions[$index])) {
-            $this->currentQuestionIndex = $index;
-            $this->saveProgressToSession();
-        }
+        $this->currentQuestionIndex = $index;
+        $this->saveProgressToSession();
     }
 
     public function nextQuestion()
     {
-        if ($this->currentQuestionIndex < count($this->questions) - 1) {
+        if ($this->currentQuestionIndex < count($this->questionIds) - 1) {
             $this->currentQuestionIndex++;
             $this->saveProgressToSession();
         }
@@ -183,10 +190,8 @@ class StudentExam extends Component
 
     public function registerViolation()
     {
-        // Jika max_violations = 0, berarti tidak ada batas pelanggaran (fleksibel)
-        if ($this->exam->max_violations == 0) {
-            return;
-        }
+        $this->loadExamAndQuestions();
+        if ($this->exam->max_violations == 0) return;
 
         $this->violationCount++;
         $this->saveProgressToSession();
@@ -200,37 +205,27 @@ class StudentExam extends Component
 
     public function forceSubmit()
     {
-        $existingResult = ExamResult::where('user_id', auth()->id())
-            ->where('exam_id', $this->exam_id)
-            ->first();
-
-        if (! $existingResult) {
-            $this->saveResult();
-        }
-
-        session()->flash('error', 'Ujian Anda dihentikan otomatis karena terdeteksi meninggalkan halaman pengerjaan lebih dari batas yang diizinkan (curang).');
-
-        return redirect()->to(route('student.dashboard'));
+        $this->submit();
     }
 
     public function submit()
     {
-
-        $existingResult = ExamResult::where('user_id', auth()->id())
+        $alreadyFinished = ExamResult::where('user_id', auth()->id())
             ->where('exam_id', $this->exam_id)
-            ->first();
+            ->exists();
 
-        if (! $existingResult) {
-            $this->saveResult();
+        if ($alreadyFinished) {
+            return redirect()->to(route('student.dashboard'));
         }
 
-        session()->flash('success', 'Ujian berhasil diselesaikan! Hasil anda telah disimpan.');
-
+        $this->saveResult();
         return redirect()->to(route('student.dashboard'));
     }
 
     private function saveResult()
     {
+        $this->loadExamAndQuestions();
+        
         $totalWeightPG = 0;
         $earnedScorePG = 0;
         $hasEssay = false;
@@ -250,20 +245,13 @@ class StudentExam extends Component
         }
 
         $finalScorePG = $totalWeightPG > 0 ? round(($earnedScorePG / $totalWeightPG) * 100, 2) : 0;
-        
         $pgWeight = $this->exam->pg_weight ?? 70;
         $weightedPGScore = ($finalScorePG * $pgWeight) / 100;
-
-        // Simpan log lengkap jawaban (termasuk esai) dan nilai PG sementara
-        $answersLog = [
-            'answers' => $this->answers,
-            'pg_score' => $finalScorePG,
-        ];
 
         ExamResult::create([
             'user_id' => auth()->id(),
             'exam_id' => $this->exam_id,
-            'answers_log' => $answersLog,
+            'answers_log' => ['answers' => $this->answers, 'pg_score' => $finalScorePG],
             'score_pg' => $finalScorePG,
             'score_essay' => $hasEssay ? null : 0,
             'score' => $hasEssay ? null : $weightedPGScore,
@@ -284,6 +272,11 @@ class StudentExam extends Component
 
     public function render()
     {
-        return view('livewire.student-exam');
+        $this->loadExamAndQuestions();
+        
+        return view('livewire.student-exam', [
+            'exam' => $this->exam,
+            'questions' => $this->questions,
+        ]);
     }
 }

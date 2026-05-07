@@ -90,6 +90,7 @@
             <div class="lg:w-3/4 w-full flex flex-col">
                 @foreach ($questions as $index => $question)
                     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 min-h-150 flex flex-col"
+                        wire:key="question-box-{{ $question->id }}"
                         id="question-{{ $index }}" x-show="currentTab === {{ $index }}"
                         x-transition:enter="transition ease-out duration-300"
                         x-transition:enter-start="opacity-0 translate-x-4"
@@ -135,7 +136,7 @@
                                     @php $imageField = $optionField . '_image'; @endphp
                                     @if ($question->$optionField || $question->$imageField)
                                         <label class="flex items-start cursor-pointer group relative">
-                                            <input type="radio" wire:model.live="answers.{{ $question->id }}"
+                                            <input type="radio" wire:model.live.debounce.1000ms="answers.{{ $question->id }}"
                                                 name="question_{{ $question->id }}" value="{{ strtoupper(substr($optionField, -1)) }}"
                                                 required class="peer sr-only option-radio">
 
@@ -251,6 +252,7 @@
                     <div class="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 mb-8">
                         @foreach ($questions as $index => $question)
                             <button type="button"
+                                wire:key="nav-dot-{{ $question->id }}"
                                 @click="currentTab = {{ $index }}; window.scrollTo({top: 0, behavior: 'smooth'})" :class="{
                                                                                 'ring-4 ring-indigo-500/30 border-indigo-500 z-10 scale-110': currentTab ===
                                                                                     {{ $index }},
@@ -425,7 +427,7 @@
     @script
     <script>
         Alpine.data('examSecurity', () => ({
-            currentTab: 0,
+            currentTab: @entangle('currentQuestionIndex'),
             isFullscreen: false,
             showWarning: false,
             isProcessingViolation: false,
