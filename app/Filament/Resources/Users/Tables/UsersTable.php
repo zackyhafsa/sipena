@@ -45,6 +45,7 @@ class UsersTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: fn () => auth()->user()->role === 'admin'),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
