@@ -132,12 +132,24 @@ class StudentExam extends Component
 
     protected function loadExamAndQuestions()
     {
+        // Ensure classes are loaded before unserialization from cache
+        class_exists(\App\Models\Exam::class);
+        class_exists(\App\Models\Question::class);
+
         $cacheKey = "exam_structure_{$this->exam_id}";
         $this->exam = cache()->remember($cacheKey, 600, function() {
             return Exam::with(['questions' => function($q) {
                 $q->select('id', 'exam_id', 'question_text', 'image_path', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'option_a_image', 'option_b_image', 'option_c_image', 'option_d_image', 'option_e_image', 'correct_answer', 'score_weight', 'type');
             }])->findOrFail($this->exam_id);
         });
+
+        // Fallback for incomplete objects (corrupted cache)
+        if ($this->exam instanceof \__PHP_Incomplete_Class) {
+            cache()->forget($cacheKey);
+            $this->exam = Exam::with(['questions' => function($q) {
+                $q->select('id', 'exam_id', 'question_text', 'image_path', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e', 'option_a_image', 'option_b_image', 'option_c_image', 'option_d_image', 'option_e_image', 'correct_answer', 'score_weight', 'type');
+            }])->findOrFail($this->exam_id);
+        }
 
         // Ensure questions are loaded if we have questionIds (for hydration)
         if (!empty($this->questionIds)) {
