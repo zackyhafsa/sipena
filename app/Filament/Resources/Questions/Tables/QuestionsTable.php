@@ -20,13 +20,11 @@ class QuestionsTable
                 TextColumn::make('exam.title')
                     ->label('Ujian')
                     ->sortable()
-                    ->searchable()
-                    ->searchDebounce('750ms'),
+                    ->searchable(),
                 TextColumn::make('question_text')
                     ->label('Pertanyaan')
                     ->limit(50) // Membatasi teks agar tabel tidak terlalu lebar
-                    ->searchable()
-                    ->searchDebounce('750ms'),
+                    ->searchable(),
                 TextColumn::make('correct_answer')
                     ->label('Kunci')
                     ->badge()
@@ -35,6 +33,7 @@ class QuestionsTable
                     ->label('Bobot')
                     ->sortable(),
             ])
+            ->searchDebounce('750ms')
             ->filters([
                 SelectFilter::make('exam_id')
                     ->relationship('exam', 'title')

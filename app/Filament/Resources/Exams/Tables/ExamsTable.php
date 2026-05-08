@@ -19,7 +19,6 @@ class ExamsTable
                 TextColumn::make('title')
                     ->label('Judul Ujian')
                     ->searchable()
-                    ->searchDebounce('750ms')
                     ->sortable(),
                 TextColumn::make('duration')
                     ->label('Durasi')
@@ -51,6 +50,7 @@ class ExamsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->searchDebounce('750ms')
             ->filters([
                 // Filter bisa ditambahkan nanti
             ])

@@ -15,22 +15,21 @@ class ClassroomsTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('Nama Kelas')->searchable()->searchDebounce('750ms')->sortable(),
+                TextColumn::make('name')->label('Nama Kelas')->searchable()->sortable(),
                 TextColumn::make('school.name')
                     ->label('Asal Sekolah')
                     ->searchable()
-                    ->searchDebounce('750ms')
                     ->sortable(),
                 TextColumn::make('level')
                     ->label('Tingkatan')
                     ->sortable(),
                 TextColumn::make('rombel')
                     ->label('Rombel')
-                    ->searchable()
-                    ->searchDebounce('750ms'),
+                    ->searchable(),
                 TextColumn::make('users_count')->counts('users')->label('Jumlah Siswa/Guru'),
                 TextColumn::make('created_at')->dateTime('d M Y')->label('Dibuat Pada'),
             ])
+            ->searchDebounce('750ms')
             ->filters([
                 //
             ])

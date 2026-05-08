@@ -18,12 +18,10 @@ class UsersTable
                 TextColumn::make('name')
                     ->label('Nama Lengkap')
                     ->searchable()
-                    ->searchDebounce('750ms')
                     ->sortable(),
                 TextColumn::make('email')
                     ->label('Email')
-                    ->searchable()
-                    ->searchDebounce('750ms'),
+                    ->searchable(),
                 TextColumn::make('role')
                     ->label('Peran')
                     ->badge()
@@ -40,15 +38,14 @@ class UsersTable
                     }),
                 TextColumn::make('classroom.name')
                     ->label('Kelas')
-                    ->searchable()
-                    ->searchDebounce('750ms'),
+                    ->searchable(),
                 TextColumn::make('school.name')
                     ->label('Sekolah')
                     ->searchable()
-                    ->searchDebounce('750ms')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: fn () => auth()->user()->role === 'admin'),
             ])
+            ->searchDebounce('750ms')
             ->defaultSort('created_at', 'desc')
             ->filters([
                 //
