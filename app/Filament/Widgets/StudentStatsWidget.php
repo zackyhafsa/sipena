@@ -11,7 +11,7 @@ class StudentStatsWidget extends StatsOverviewWidget
     {
         $cacheKey = 'dashboard_stats_' . (auth()->user()->classroom_id ?? 'all');
         
-        return cache()->remember($cacheKey, 60, function() {
+        $data = cache()->remember($cacheKey, 60, function() {
             $totalSiswa = \App\Models\User::where('role', 'student');
             $ujianSelesai = \App\Models\ExamResult::whereNotNull('score');
             $avgScore = \App\Models\ExamResult::whereNotNull('score');
@@ -27,19 +27,26 @@ class StudentStatsWidget extends StatsOverviewWidget
             }
 
             return [
-                Stat::make('Total Siswa', $totalSiswa->count())
-                    ->icon('heroicon-o-users')
-                    ->color('primary'),
-                Stat::make('Ujian Selesai', $ujianSelesai->count())
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success'),
-                Stat::make('Rata-rata Nilai', number_format($avgScore->average('score') ?? 0, 1))
-                    ->icon('heroicon-o-chart-bar')
-                    ->color('info'),
-                Stat::make('Siswa Melanggar', $totalPelanggaran->count())
-                    ->icon('heroicon-o-exclamation-triangle')
-                    ->color('danger'),
+                'totalSiswa' => $totalSiswa->count(),
+                'ujianSelesai' => $ujianSelesai->count(),
+                'avgScore' => number_format($avgScore->average('score') ?? 0, 1),
+                'totalPelanggaran' => $totalPelanggaran->count(),
             ];
         });
+
+        return [
+            Stat::make('Total Siswa', $data['totalSiswa'])
+                ->icon('heroicon-o-users')
+                ->color('primary'),
+            Stat::make('Ujian Selesai', $data['ujianSelesai'])
+                ->icon('heroicon-o-check-circle')
+                ->color('success'),
+            Stat::make('Rata-rata Nilai', $data['avgScore'])
+                ->icon('heroicon-o-chart-bar')
+                ->color('info'),
+            Stat::make('Siswa Melanggar', $data['totalPelanggaran'])
+                ->icon('heroicon-o-exclamation-triangle')
+                ->color('danger'),
+        ];
     }
 }
