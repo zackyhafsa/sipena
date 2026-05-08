@@ -32,20 +32,17 @@ class ExamResultsTable
                 TextColumn::make('user.name')
                     ->label('Nama Siswa')
                     ->sortable()
-                    ->searchable()
-                    ->searchDebounce('750ms'),
+                    ->searchable(),
 
                 TextColumn::make('user.classroom.name')
                     ->label('Kelas')
                     ->sortable()
-                    ->searchable()
-                    ->searchDebounce('750ms'),
+                    ->searchable(),
 
                 TextColumn::make('exam.title')
                     ->label('Nama Ujian')
                     ->sortable()
-                    ->searchable()
-                    ->searchDebounce('750ms'),
+                    ->searchable(),
 
                 TextColumn::make('score_pg')
                     ->label('Nilai PG (100)')
@@ -87,6 +84,7 @@ class ExamResultsTable
                     ->dateTime('d M Y - H:i')
                     ->sortable(),
             ])
+            ->searchDebounce('750ms')
             ->filters([
                 SelectFilter::make('exam_id')
                     ->relationship('exam', 'title')
