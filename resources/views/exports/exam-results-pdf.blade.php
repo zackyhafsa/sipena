@@ -31,12 +31,7 @@
 <body>
     @if(isset($school) && $school)
     <div class="kop-surat">
-        <div class="logo">
-            @if($school->logo_kabupaten)
-                <img src="{{ public_path('storage/' . $school->logo_kabupaten) }}" alt="Logo Kabupaten">
-            @endif
-        </div>
-        <div class="school-info">
+        <div class="school-info" style="width: 100%;">
             <h1>{{ $school->name }}</h1>
             @if($school->regency)<p>Pemerintah Daerah {{ $school->regency }}</p>@endif
             @if($school->address)<p>{{ $school->address }}</p>@endif
@@ -45,11 +40,6 @@
                 @if($school->phone && $school->email) | @endif 
                 @if($school->email)Email: {{ $school->email }}@endif
             </p>
-        </div>
-        <div class="logo">
-            @if($school->logo)
-                <img src="{{ public_path('storage/' . $school->logo) }}" alt="Logo Sekolah">
-            @endif
         </div>
     </div>
     @endif

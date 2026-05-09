@@ -6,6 +6,8 @@ use Filament\Widgets\ChartWidget;
 
 class ExamScoresChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
+
     protected ?string $heading = 'Grafik Peserta Ujian (7 Hari Terakhir)';
 
     protected function getData(): array

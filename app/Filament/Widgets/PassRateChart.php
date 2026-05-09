@@ -6,6 +6,8 @@ use Filament\Widgets\ChartWidget;
 
 class PassRateChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
+
     protected ?string $heading = 'Tingkat Kelulusan Ujian';
 
     protected function getData(): array

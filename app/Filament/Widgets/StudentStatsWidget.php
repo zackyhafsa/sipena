@@ -7,6 +7,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StudentStatsWidget extends StatsOverviewWidget
 {
+    protected ?string $pollingInterval = null;
+
     protected function getStats(): array
     {
         $cacheKey = 'dashboard_stats_' . (auth()->user()->classroom_id ?? 'all');

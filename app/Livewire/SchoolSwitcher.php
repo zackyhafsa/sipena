@@ -3,33 +3,48 @@
 namespace App\Livewire;
 
 use App\Models\School;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Livewire\Component;
 
-class SchoolSwitcher extends Component
+class SchoolSwitcher extends Component implements HasSchemas
 {
-    public $activeSchoolId;
+    use InteractsWithSchemas;
 
-    public function mount()
+    public ?array $data = [];
+
+    public function mount(): void
     {
-        $this->activeSchoolId = session('active_school_id');
+        $this->data['activeSchoolId'] = session('active_school_id');
     }
 
-    public function updatedActiveSchoolId($value)
+    public function schema(Schema $schema): Schema
     {
-        if (empty($value)) {
-            session()->forget('active_school_id');
-        } else {
-            session()->put('active_school_id', (int) $value);
-        }
-
-        // Redirect to refresh current page with new school context
-        return redirect(request()->header('Referer', route('filament.admin.pages.dashboard')));
+        return $schema
+            ->components([
+                Select::make('activeSchoolId')
+                    ->hiddenLabel()
+                    ->placeholder('🏫 Semua Sekolah')
+                    ->options(School::pluck('name', 'id'))
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function ($state) {
+                        if (empty($state)) {
+                            session()->forget('active_school_id');
+                        } else {
+                            session()->put('active_school_id', (int) $state);
+                        }
+                        
+                        return redirect(request()->header('Referer', route('filament.admin.pages.dashboard')));
+                    }),
+            ])
+            ->statePath('data');
     }
 
     public function render()
     {
-        return view('livewire.school-switcher', [
-            'schools' => School::orderBy('name')->get(),
-        ]);
+        return view('livewire.school-switcher');
     }
 }

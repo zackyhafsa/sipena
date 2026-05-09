@@ -160,7 +160,23 @@ class StudentExam extends Component
         }
     }
 
+    /**
+     * Auto-save: hanya dipanggil saat jawaban berubah (bukan saat navigasi).
+     * Livewire memanggil ini setiap kali public property berubah via wire:model.
+     */
     public function updated($propertyName)
+    {
+        // Hanya simpan ke session jika jawaban atau violationCount berubah
+        if (str_starts_with($propertyName, 'answers.') || $propertyName === 'violationCount') {
+            $this->saveProgressToSession();
+        }
+    }
+
+    /**
+     * Periodic sync: dipanggil oleh JavaScript setInterval (setiap 30 detik)
+     * untuk menyimpan currentQuestionIndex dan memastikan progres aman.
+     */
+    public function syncProgress()
     {
         $this->saveProgressToSession();
     }
@@ -181,14 +197,13 @@ class StudentExam extends Component
     public function goToQuestion($index)
     {
         $this->currentQuestionIndex = $index;
-        $this->saveProgressToSession();
+        // Tidak perlu saveProgressToSession di sini — auto-save periodik yang menangani
     }
 
     public function nextQuestion()
     {
         if ($this->currentQuestionIndex < count($this->questionIds) - 1) {
             $this->currentQuestionIndex++;
-            $this->saveProgressToSession();
         }
     }
 
@@ -196,7 +211,6 @@ class StudentExam extends Component
     {
         if ($this->currentQuestionIndex > 0) {
             $this->currentQuestionIndex--;
-            $this->saveProgressToSession();
         }
     }
 
@@ -284,7 +298,10 @@ class StudentExam extends Component
 
     public function render()
     {
-        $this->loadExamAndQuestions();
+        // Hanya load exam data jika belum dimuat (saat hydration setelah request Livewire)
+        if (!$this->exam) {
+            $this->loadExamAndQuestions();
+        }
         
         return view('livewire.student-exam', [
             'exam' => $this->exam,
