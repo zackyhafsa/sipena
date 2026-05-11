@@ -142,8 +142,32 @@ class ExamResultsTable
 
                             if ($question->type === 'multiple_choice') {
                                 // ── Pilihan Ganda ─────────────────────────────────────
+                                $optionMap = [
+                                    'option_a' => 'A',
+                                    'option_b' => 'B',
+                                    'option_c' => 'C',
+                                    'option_d' => 'D',
+                                    'option_e' => 'E',
+                                ];
+
                                 $correctAnswer = $question->correct_answer ?? '-';
                                 $isCorrect = $userAnswer === $correctAnswer;
+
+                                // Konversi key internal ke huruf yang mudah dibaca
+                                $displayAnswer = $optionMap[$userAnswer] ?? $userAnswer;
+                                $displayCorrect = $optionMap[$correctAnswer] ?? $correctAnswer;
+
+                                // Peta balik huruf → field untuk menampilkan teks opsi
+                                $letterToField = [
+                                    'A' => 'option_a',
+                                    'B' => 'option_b',
+                                    'C' => 'option_c',
+                                    'D' => 'option_d',
+                                    'E' => 'option_e',
+                                ];
+
+                                $answerText = isset($letterToField[$displayAnswer]) ? $question->{$letterToField[$displayAnswer]} : '-';
+                                $correctText = isset($letterToField[$displayCorrect]) ? $question->{$letterToField[$displayCorrect]} : '-';
 
                                 $statusBadge = $isCorrect
                                     ? "<span class='px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold
@@ -179,7 +203,10 @@ class ExamResultsTable
                                                         Jawaban Siswa
                                                     </span>
                                                     <div class='mt-1 text-lg font-bold {$answerColor}'>
-                                                        {$userAnswer}
+                                                        {$displayAnswer}
+                                                    </div>
+                                                    <div class='text-sm text-gray-500 dark:text-gray-400'>
+                                                        {$answerText}
                                                     </div>
                                                 </div>
                                                 <div>
@@ -189,7 +216,10 @@ class ExamResultsTable
                                                     </span>
                                                     <div class='mt-1 text-lg font-bold
                                                                 text-gray-800 dark:text-white'>
-                                                        {$correctAnswer}
+                                                        {$displayCorrect}
+                                                    </div>
+                                                    <div class='text-sm text-gray-500 dark:text-gray-400'>
+                                                        {$correctText}
                                                     </div>
                                                 </div>
                                             </div>

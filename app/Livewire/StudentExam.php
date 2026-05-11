@@ -252,19 +252,33 @@ class StudentExam extends Component
     {
         $this->loadExamAndQuestions();
         
+        // Peta konversi: key internal → huruf di database
+        $optionMap = [
+            'option_a' => 'A',
+            'option_b' => 'B',
+            'option_c' => 'C',
+            'option_d' => 'D',
+            'option_e' => 'E',
+        ];
+
         $totalWeightPG = 0;
         $earnedScorePG = 0;
         $hasEssay = false;
+        $normalizedAnswers = [];
 
         foreach ($this->questions as $question) {
             $weight = $question->score_weight ?? 1;
             $userAnswer = $this->answers[$question->id] ?? null;
 
+            // Konversi option_a → A, option_b → B, dst.
+            $normalizedAnswer = $optionMap[$userAnswer] ?? $userAnswer;
+            $normalizedAnswers[$question->id] = $normalizedAnswer;
+
             if ($question->type === 'essay') {
                 $hasEssay = true;
             } else {
                 $totalWeightPG += $weight;
-                if ($userAnswer === $question->correct_answer) {
+                if ($normalizedAnswer === $question->correct_answer) {
                     $earnedScorePG += $weight;
                 }
             }
@@ -277,7 +291,7 @@ class StudentExam extends Component
         ExamResult::create([
             'user_id' => auth()->id(),
             'exam_id' => $this->exam_id,
-            'answers_log' => ['answers' => $this->answers, 'pg_score' => $finalScorePG],
+            'answers_log' => ['answers' => $normalizedAnswers, 'pg_score' => $finalScorePG],
             'score_pg' => $finalScorePG,
             'score_essay' => $hasEssay ? null : 0,
             'score' => $hasEssay ? null : $weightedPGScore,
